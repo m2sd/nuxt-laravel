@@ -78,6 +78,7 @@ without `nuxt-laravel`
 Route::get(
     '{uri}',
     function($request, $uri) {
+      // ...
       // If the request expects JSON, it means that
       // someone sent a request to an invalid route.
       if ($request->expectsJson()) {
@@ -85,7 +86,7 @@ Route::get(
       }
 
       // Fetch and display the page from the render path on nuxt dev server
-      return file_get_contents(env('NUXT_URL'));
+      return file_get_contents(env('NUXT_URL', storage_path('app/index.html')));
     }
 )->where('uri', '.*');
 ```
@@ -113,15 +114,15 @@ Compiles the application for production deployment.
 
 In addition to the default `nuxt build` command, the following options are provided:
 
-| option          | description                                 | default                    |
-| --------------- | ------------------------------------------- | -------------------------- |
-| `--no-delete`   | Do not delete build files after generation  | `false`                    |
-| `--file-path`   | Location for the SPA index file             | `'storage/app/index.html'` |
-| `--public-path` | The folder where laravel serves assets from | `'public'`                 |
+| option          | description                                 | default                       |
+| --------------- | ------------------------------------------- | ----------------------------- |
+| `--no-delete`   | Do not delete build files after generation  | *boolean option has no value* |
+| `--file-path`   | Location for the SPA index file             | `'storage/app/index.html'`    |
+| `--public-path` | The folder where laravel serves assets from | `'public'`                    |
 
 If file path or public path are relative they are resolved relative to `rootDir` from `nuxt.config`.
 
-> **!Attention!:** If either path does not exists it is created recursively
+> **!!! Attention !!!:** If either path does not exists it is created recursively
 
 #### Laravel integration in production
 
