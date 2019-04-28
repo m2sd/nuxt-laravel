@@ -2,13 +2,13 @@
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-## Jest coverage
+**Jest coverage**
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
 | ![Statements](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) | ![Branches](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) | ![Functions](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) | ![Lines](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) |
 
-This package allows to develop a nuxt SPA as frontend for a laravel backend.
+This package allows to develop a nuxt SPA as frontend for a laravel backend.  
 The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/laravel-nuxt-js) by [skyrpex](https://github.com/skyrpex).
 > **Hint:** Use his composer exension [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt) for dotenv support
 
@@ -61,7 +61,7 @@ In addition to the default `nuxt dev` command, the following options are provide
 | `--render-path`  | URL path used to render the SPA | `'/__nuxt_laravel__'` |
 | `--laravel-path` | Path to laravel directory       | `process.cwd()`       |
 
-If laravel path is provided a relative path it is resolved relative to `process.cwd()`.
+If laravel path is relative it is resolved relative to `process.cwd()`.
 
 #### Laravel integration in development
 
@@ -74,7 +74,7 @@ without `nuxt-laravel`
 
 ```php
 // ...
-// Add this route the last, so it doesn't interfere with your other routes.
+// Add this route last, so it doesn't interfere with your other routes.
 Route::get(
     '{uri}',
     function($request, $uri) {
@@ -94,7 +94,7 @@ with `nuxt-laravel`
 
 ```php
 // ...
-// Add this route the last, so it doesn't interfere with your other routes.
+// Add this route last, so it doesn't interfere with your other routes.
 Route::get(
     '{uri}',
     '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
@@ -121,11 +121,11 @@ In addition to the default `nuxt build` command, the following options are provi
 
 If file path or public path are relative they are resolved relative to `rootDir` from `nuxt.config`.
 
-> **Attention:** If either path does not exists it is created recursively
+> **!Attention!:** If either path does not exists it is created recursively
 
 #### Laravel integration in production
 
-If not provided, the file path is first checked against `process.env.NUXT_URL` so you can also set it using the environment variable.  
-The command loads `require('dotenv').config()` so you can provide `NUXT_URL` in a `.env` file.
+If not provided, the file path is first checked against `process.env.NUXT_URL`, so you can also set it using the environment variable.  
+The command loads `require('dotenv').config()` so you can provide `NUXT_URL` through an `.env` file.
 
 Or just use [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt).
