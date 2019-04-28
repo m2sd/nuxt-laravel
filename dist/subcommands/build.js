@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_extra_1 = __importDefault(require("fs-extra"));
+const lodash_1 = require("lodash");
 const path_1 = __importDefault(require("path"));
 const cli_1 = require("@nuxt/cli");
 const cli_chunk3_1 = require("@nuxt/cli/dist/cli-chunk3");
@@ -29,10 +30,12 @@ const config = {
             description: 'Do not delete build files after generation',
             prepare: (cmd, _, argv) => {
                 if (argv.delete) {
-                    // add hook to delete build files after generation
+                    // add hook to callect files to delete after generation
                     cmd.addNuxtHook('generate:done', ({ options }) => {
-                        fs_extra_1.default.removeSync(path_1.default.resolve(options.rootDir, options.generate.dir));
-                        fs_extra_1.default.removeSync(path_1.default.resolve(options.rootDir, options.buildDir));
+                        cmd.argv.delete = [
+                            path_1.default.resolve(options.rootDir, options.generate.dir),
+                            path_1.default.resolve(options.rootDir, options.buildDir)
+                        ];
                     });
                 }
             },
@@ -104,6 +107,11 @@ const config = {
         const buildCmd = await cli_1.commands.default('build');
         cli_1.setup({ dev: false });
         await buildCmd.run(cmd);
+        if (cmd.argv.delete && lodash_1.isArray(cmd.argv.delete)) {
+            cmd.argv.delete.forEach(delPath => {
+                fs_extra_1.default.removeSync(delPath);
+            });
+        }
     }
 };
 exports.default = config;

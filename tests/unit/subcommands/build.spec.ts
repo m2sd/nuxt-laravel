@@ -9,20 +9,21 @@ import fs from 'fs-extra'
 jest.mock('fs-extra')
 
 import { NuxtCommand } from '../../../src/classes/nuxtCommand'
-import build from '../../../src/subcommands/build'
+import buildCmd from '../../../src/subcommands/build'
 import { CommandSimulator, createCommandSimulator } from '../../utils'
 
 const html = '__render_test__'
 
 const renderSpy = jest.fn().mockResolvedValue({ html })
 const addHookSpy = jest.spyOn(NuxtCommand.prototype, 'addNuxtHook')
+const fromSpy = jest.spyOn(NuxtCommand, 'from')
 
 describe('nuxt laravel build', () => {
   let commandSimulator: CommandSimulator
 
   beforeAll(async () => {
     defineExpected()
-    commandSimulator = await createCommandSimulator(build)
+    commandSimulator = await createCommandSimulator(buildCmd)
   })
 
   describe('full run', () => {
@@ -70,9 +71,26 @@ describe('nuxt laravel build', () => {
           publicPathTest()
         })
 
-        test('build files are removed', () => {
-          expected.resolved!.remove.forEach((remove, i) => {
-            expect(fs.removeSync).toHaveBeenNthCalledWith(i + 1, remove)
+        describe('build files are removed', () => {
+          let instance: NuxtCommand
+          beforeAll(() => {
+            expect(fromSpy.mock.results[0].type).toBe('return')
+
+            instance = fromSpy.mock.results[0].value
+          })
+
+          test('destinations are collected', () => {
+            expect(instance.argv.delete).toEqual(
+              expect.arrayContaining([...expected.resolved!.remove])
+            )
+          })
+
+          test('destinations are removed on command run', async () => {
+            await buildCmd!.run!(instance)
+
+            expected.resolved!.remove.forEach((rmPath, i) => {
+              expect(fs.removeSync).toHaveBeenNthCalledWith(i + 1, rmPath)
+            })
           })
         })
       })
@@ -262,6 +280,26 @@ const defineExpected = (custom?: Expected) => {
   })
 }
 
+const runHooks = async () => {
+  const generator = {
+    nuxt: {
+      server: {
+        renderRoute: renderSpy
+      }
+    },
+    options
+  }
+
+  await hookSpy.mock.calls.reduce(async (promise, call) => {
+    await promise
+
+    expect(call).toEqual(
+      expect.arrayContaining(['generate:done', expect.any(Function)])
+    )
+    return await call[1](generator)
+  }, Promise.resolve())
+}
+
 const envSetup = async (config?: NuxtConfiguration, exp?: Expected) => {
   defineExpected(exp)
 
@@ -294,23 +332,7 @@ const envSetup = async (config?: NuxtConfiguration, exp?: Expected) => {
     ]
   }
 
-  const generator = {
-    nuxt: {
-      server: {
-        renderRoute: renderSpy
-      }
-    },
-    options
-  }
-
-  await addHookSpy.mock.calls.reduce(async (promise, call) => {
-    await promise
-
-    expect(call).toEqual(
-      expect.arrayContaining(['generate:done', expect.any(Function)])
-    )
-    return await call[1](generator)
-  }, Promise.resolve())
+  await runHooks()
 }
 
 const envTeardown = () => {

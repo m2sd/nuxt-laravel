@@ -1,4 +1,5 @@
 import fs from 'fs-extra'
+import { isArray } from 'lodash'
 import path from 'path'
 
 import { commands, NuxtCommandConfig, setup } from '@nuxt/cli'
@@ -34,12 +35,12 @@ const config: NuxtCommandConfig<NuxtCommand> = {
       description: 'Do not delete build files after generation',
       prepare: (cmd, _, argv) => {
         if (argv.delete) {
-          // add hook to delete build files after generation
+          // add hook to callect files to delete after generation
           cmd.addNuxtHook!('generate:done', ({ options }) => {
-            fs.removeSync(
-              path.resolve(options.rootDir!, options.generate!.dir!)
-            )
-            fs.removeSync(path.resolve(options.rootDir!, options.buildDir!))
+            cmd.argv.delete = [
+              path.resolve(options.rootDir!, options.generate!.dir!),
+              path.resolve(options.rootDir!, options.buildDir!)
+            ]
           })
         }
       },
@@ -142,6 +143,12 @@ const config: NuxtCommandConfig<NuxtCommand> = {
     setup({ dev: false })
 
     await buildCmd!.run!(cmd)
+
+    if (cmd.argv.delete && isArray(cmd.argv.delete)) {
+      cmd.argv.delete.forEach(delPath => {
+        fs.removeSync(delPath)
+      })
+    }
   }
 }
 
