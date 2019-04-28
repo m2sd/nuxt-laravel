@@ -107,4 +107,3 @@ const config = {
     }
 };
 exports.default = config;
-//# sourceMappingURL=build.js.map

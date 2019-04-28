@@ -118,4 +118,3 @@ const config = {
     }
 };
 exports.default = config;
-//# sourceMappingURL=dev.js.map

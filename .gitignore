@@ -84,7 +84,7 @@ typings/
 .dynamodb/
 
 # source maps
-*.js.map
+*.map
 
 # build output
 public

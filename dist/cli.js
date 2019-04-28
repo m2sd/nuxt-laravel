@@ -20,4 +20,3 @@ exports.run = () => {
     return nuxtCommand_1.NuxtCommand.run(cmd, argv);
 };
 exports.NuxtLaravelCommand = nuxtCommand_1.NuxtCommand;
-//# sourceMappingURL=cli.js.map

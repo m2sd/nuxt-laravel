@@ -91,4 +91,3 @@ class NuxtCommand extends cli_1.NuxtCommand {
 NuxtCommand.CONFIG_KEY = '__nuxt_laravel__';
 exports.NuxtCommand = NuxtCommand;
 exports.default = NuxtCommand;
-//# sourceMappingURL=nuxtCommand.js.map

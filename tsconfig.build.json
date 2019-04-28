@@ -3,7 +3,10 @@
   "compilerOptions": {
     "rootDir": "./src/",
     "outDir": "./dist/",
+    "sourceMap": false,
     "types": []
   },
-  "exclude": ["tests/**/*"]
+  "exclude": [
+    "tests/**/*"
+  ]
 }

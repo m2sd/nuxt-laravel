@@ -13,11 +13,12 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "build:dev": "npm run build -- --sourceMap",
     "build:clean": "rimraf dist .nuxt public storage && npm run build",
     "lint": "tslint -p .",
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "tslint-config-prettier-check ./tslint.json",
-    "test": "npm run lint:check && npm run lint && jest && jest-badges-readme --coverageDir='./coverage'",
+    "test": "npm run lint:check && npm run lint && jest && jest-badges-readme",
     "release": "standard-version"
   },
   "repository": {
@@ -29,6 +30,7 @@
     "nuxt",
     "spa",
     "vue",
+    "nuxt-cli",
     "cli"
   ],
   "author": "Michael Marcenich <info@m-squared-solutions.it> (https://m-squared-solutions.it)",
