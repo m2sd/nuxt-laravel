@@ -1,4 +1,5 @@
-import { defaultsDeep, merge } from 'lodash'
+import { defaultsDeep } from 'lodash'
+import { URL } from 'url'
 
 import { buildSpy, listenSpy, nuxtSpy, readySpy } from '@nuxt/cli'
 import NuxtConfiguration from '@nuxt/config'
