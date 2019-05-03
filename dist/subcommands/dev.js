@@ -105,7 +105,7 @@ const config = {
         const laravelPath = path_1.default.resolve(process.cwd(), `${cmd.argv['laravel-path']}`);
         // try to start artisan serve from laravel path
         try {
-            await execa_1.default('php', [
+            execa_1.default('php', [
                 'artisan',
                 'serve',
                 `--host=${nuxtUrl.hostname}`,

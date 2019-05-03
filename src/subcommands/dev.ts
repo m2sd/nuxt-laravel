@@ -149,7 +149,7 @@ const config: NuxtLaravelCommandConfig = {
 
     // try to start artisan serve from laravel path
     try {
-      await execa(
+      execa(
         'php',
         [
           'artisan',
