@@ -3,34 +3,38 @@ import { isArray, mergeWith } from 'lodash'
 import path from 'path'
 import { URL } from 'url'
 
-import { commands, NuxtCommandConfig, setup } from '@nuxt/cli'
+import { commands, loadNuxtConfig } from '@nuxt/cli'
 import { common, server } from '@nuxt/cli/dist/cli-chunk3'
 import { NuxtConfigurationRouter } from '@nuxt/config/types/router'
 
-import { NuxtCommand } from '../classes/nuxtCommand'
+import {
+  NuxtLaravelCommand,
+  NuxtLaravelCommandConfig
+} from '../classes/nuxtCommand'
 
 delete common.spa
 delete common.universal
 
-const config: NuxtCommandConfig<NuxtCommand> = {
-  description:
-    'Start nuxt dev server for the frontend and laravel dev server for backend',
+const config: NuxtLaravelCommandConfig = {
+  /* tslint:disable:object-literal-sort-keys */
   name: 'nuxt-laravel-dev',
+  description:
+    'Start laravel development server and run the application in development mode (e.g. hot-code reloading, error reporting)',
   options: {
     ...common,
     ...server,
-    'laravel-path': {
-      default: process.cwd(),
-      description: 'Path to laravel directory',
-      type: 'string'
-    },
     open: {
       alias: 'o',
       description: 'Opens the server listeners url in the default browser',
       type: 'boolean'
     },
+    'laravel-path': {
+      default: process.cwd(),
+      description: 'Path to laravel directory',
+      type: 'string'
+    },
     'render-path': {
-      default: `/${NuxtCommand.CONFIG_KEY}`,
+      default: `/${NuxtLaravelCommand.CONFIG_KEY}`,
       description: 'URL path used to render the SPA',
       prepare: (_, options, argv) => {
         // save existing extend routes function
@@ -50,21 +54,47 @@ const config: NuxtCommandConfig<NuxtCommand> = {
           }
 
           // Try our best to find the root route.
-          const index = routes.find(
+          let index = routes.find(
             // First, check if there is an unnamed route
             // Then, check if there's a route at /
             // Finally, check for a name with first segment index
             route =>
               route.name === '' ||
               route.path === '/' ||
-              !!(route.name && route.name.match(/^index/))
+              !!(route.name && route.name.match(/^index(-\w+)?$/))
           )
+
+          if (!index && options.modules) {
+            // resolve i18n config
+            const i18n = (m => isArray(m) && m[1])(
+              options.modules.find(m => isArray(m) && m[0] === 'nuxt-i18n')
+            )
+
+            // find translated route
+            if (i18n && i18n.defaultLocale) {
+              const separator = i18n.routesNameSeparator || '___'
+              index = routes.find(
+                route =>
+                  !!(
+                    route.name &&
+                    route.name.match(
+                      new RegExp(`^index${separator}${i18n.defaultLocale}`)
+                    )
+                  )
+              )
+            }
+          }
+
+          // fail if index route can not be resolved
+          if (!index) {
+            throw String('Unable to resolve index route')
+          }
 
           // add a copy of the index route
           // on the specified render path
           routes.push(
             Object.assign({}, index, {
-              name: NuxtCommand.CONFIG_KEY,
+              name: NuxtLaravelCommand.CONFIG_KEY,
               path: argv['render-path']
             })
           )
@@ -103,19 +133,12 @@ const config: NuxtCommandConfig<NuxtCommand> = {
   },
   usage: 'laravel dev <dir>',
   async run(cmd) {
-    // get default dev command
-    const devCmd = await commands.default('dev')
-
-    // setup environment for development
-    setup({ dev: true })
-
-    // start dev server
-    const nuxt = await devCmd!.startDev(cmd, cmd.argv)
+    const options = await loadNuxtConfig(cmd.argv)
 
     // retrieve dev server URL
     const nuxtUrl = new URL(
       cmd.argv['render-path'] as string,
-      `http://${nuxt.options.server.host}:${nuxt.options.server.port}`
+      `http://${options.server!.host}:${options.server!.port}`
     )
 
     // resolve relative to working directory
@@ -149,6 +172,10 @@ const config: NuxtCommandConfig<NuxtCommand> = {
     } catch (error) {
       throw String(`Failed to run command \`php artisan serve\`:\n${error}`)
     }
+
+    // start dev server
+    const devCmd = await commands.default('dev')
+    await devCmd!.startDev(cmd, cmd.argv)
   }
 }
 

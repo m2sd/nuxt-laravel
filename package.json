@@ -18,7 +18,8 @@
     "lint": "tslint -p .",
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "tslint-config-prettier-check ./tslint.json",
-    "test": "npm run lint:check && npm run lint && jest && jest-badges-readme",
+    "test": "jest",
+    "validate": "npm run lint:check && npm run lint && npm test && jest-badges-readme",
     "release": "standard-version"
   },
   "repository": {
@@ -87,7 +88,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm test && npm run build:clean && git add dist 'README.md'",
+      "pre-commit": "npm run validate && npm run build:clean && git add dist 'README.md'",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   }

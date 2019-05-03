@@ -3,10 +3,10 @@ import { isArray, merge } from 'lodash'
 import { configSpy, NuxtCommand, NuxtCommandConfig, nuxtSpy } from '@nuxt/cli'
 import NuxtConfiguration from '@nuxt/config'
 
-import { NuxtCommand as NuxtLaravelCommand } from '../src/classes/nuxtCommand'
+import NuxtLaravelCommand from '../src/classes/nuxtCommand'
 
 export type CommandSimulator = (
-  argv?: string[],
+  argv?: string[] | NuxtConfiguration,
   nuxtConf?: NuxtConfiguration
 ) => Promise<NuxtConfiguration | undefined>
 

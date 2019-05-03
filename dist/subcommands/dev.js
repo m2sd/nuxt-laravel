@@ -13,18 +13,19 @@ const nuxtCommand_1 = require("../classes/nuxtCommand");
 delete cli_chunk3_1.common.spa;
 delete cli_chunk3_1.common.universal;
 const config = {
-    description: 'Start nuxt dev server for the frontend and laravel dev server for backend',
+    /* tslint:disable:object-literal-sort-keys */
     name: 'nuxt-laravel-dev',
-    options: Object.assign({}, cli_chunk3_1.common, cli_chunk3_1.server, { 'laravel-path': {
-            default: process.cwd(),
-            description: 'Path to laravel directory',
-            type: 'string'
-        }, open: {
+    description: 'Start laravel development server and run the application in development mode (e.g. hot-code reloading, error reporting)',
+    options: Object.assign({}, cli_chunk3_1.common, cli_chunk3_1.server, { open: {
             alias: 'o',
             description: 'Opens the server listeners url in the default browser',
             type: 'boolean'
+        }, 'laravel-path': {
+            default: process.cwd(),
+            description: 'Path to laravel directory',
+            type: 'string'
         }, 'render-path': {
-            default: `/${nuxtCommand_1.NuxtCommand.CONFIG_KEY}`,
+            default: `/${nuxtCommand_1.NuxtLaravelCommand.CONFIG_KEY}`,
             description: 'URL path used to render the SPA',
             prepare: (_, options, argv) => {
                 // save existing extend routes function
@@ -38,17 +39,31 @@ const config = {
                         extendRoutesActual.apply(this, [routes, resolve]);
                     }
                     // Try our best to find the root route.
-                    const index = routes.find(
+                    let index = routes.find(
                     // First, check if there is an unnamed route
                     // Then, check if there's a route at /
                     // Finally, check for a name with first segment index
                     route => route.name === '' ||
                         route.path === '/' ||
-                        !!(route.name && route.name.match(/^index/)));
+                        !!(route.name && route.name.match(/^index(-\w+)?$/)));
+                    if (!index && options.modules) {
+                        // resolve i18n config
+                        const i18n = (m => lodash_1.isArray(m) && m[1])(options.modules.find(m => lodash_1.isArray(m) && m[0] === 'nuxt-i18n'));
+                        // find translated route
+                        if (i18n && i18n.defaultLocale) {
+                            const separator = i18n.routesNameSeparator || '___';
+                            index = routes.find(route => !!(route.name &&
+                                route.name.match(new RegExp(`^index${separator}${i18n.defaultLocale}`))));
+                        }
+                    }
+                    // fail if index route can not be resolved
+                    if (!index) {
+                        throw String('Unable to resolve index route');
+                    }
                     // add a copy of the index route
                     // on the specified render path
                     routes.push(Object.assign({}, index, {
-                        name: nuxtCommand_1.NuxtCommand.CONFIG_KEY,
+                        name: nuxtCommand_1.NuxtLaravelCommand.CONFIG_KEY,
                         path: argv['render-path']
                     }));
                 };
@@ -83,14 +98,9 @@ const config = {
         } }),
     usage: 'laravel dev <dir>',
     async run(cmd) {
-        // get default dev command
-        const devCmd = await cli_1.commands.default('dev');
-        // setup environment for development
-        cli_1.setup({ dev: true });
-        // start dev server
-        const nuxt = await devCmd.startDev(cmd, cmd.argv);
+        const options = await cli_1.loadNuxtConfig(cmd.argv);
         // retrieve dev server URL
-        const nuxtUrl = new url_1.URL(cmd.argv['render-path'], `http://${nuxt.options.server.host}:${nuxt.options.server.port}`);
+        const nuxtUrl = new url_1.URL(cmd.argv['render-path'], `http://${options.server.host}:${options.server.port}`);
         // resolve relative to working directory
         const laravelPath = path_1.default.resolve(process.cwd(), `${cmd.argv['laravel-path']}`);
         // try to start artisan serve from laravel path
@@ -115,6 +125,10 @@ const config = {
         catch (error) {
             throw String(`Failed to run command \`php artisan serve\`:\n${error}`);
         }
+        // start dev server
+        const devCmd = await cli_1.commands.default('dev');
+        await devCmd.startDev(cmd, cmd.argv);
     }
 };
 exports.default = config;
+//# sourceMappingURL=dev.js.map

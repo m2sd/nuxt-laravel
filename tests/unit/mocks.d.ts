@@ -39,9 +39,3 @@ declare module 'execa' {
 
   export default value
 }
-
-declare module 'opener' {
-  const value: jest.Mock<typeof import('opener/index')>
-
-  export default value
-}

@@ -1,11 +1,11 @@
-import NuxtConfiguration from '@nuxt/config'
-
-import { NuxtCommand } from '../../../src/classes/nuxtCommand'
+import NuxtCommand from '../../../src/classes/nuxtCommand'
 import { commands } from '../../../src/cli'
 
 describe('NuxtCommand class', () => {
-  test('from returns identity if called with existing instance', () => {
-    const cmd = NuxtCommand.from(commands.dev(), [])
+  test('from returns identity if called with existing instance', async () => {
+    const testConfig = await commands.default('dev')
+
+    const cmd = NuxtCommand.from(testConfig!, [])
     const test = NuxtCommand.from(cmd)
 
     expect(test).toEqual(cmd)
@@ -13,8 +13,10 @@ describe('NuxtCommand class', () => {
 
   describe('getNuxtConfig()', () => {
     describe('returns config containing correct defaults', () => {
-      let config: NuxtConfiguration | undefined
-      afterEach(() => {
+      let cmd: NuxtCommand | undefined
+
+      afterEach(async () => {
+        const config = await cmd!.getNuxtConfig()
         expect(config).toBeDefined()
         expect(config).toEqual(
           expect.objectContaining({
@@ -23,19 +25,17 @@ describe('NuxtCommand class', () => {
           })
         )
 
-        config = undefined
+        cmd = undefined
       })
 
       test('for dev command', async () => {
-        const cmd = NuxtCommand.from(commands.dev())
-
-        config = await cmd.getNuxtConfig()
+        const cmdConf = await commands.default('dev')
+        cmd = NuxtCommand.from(cmdConf!)
       })
 
       test('for build command', async () => {
-        const cmd = NuxtCommand.from(commands.build())
-
-        config = await cmd.getNuxtConfig()
+        const cmdConf = await commands.default('build')
+        cmd = NuxtCommand.from(cmdConf!)
       })
     })
   })

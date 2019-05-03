@@ -1,61 +1,39 @@
-import {
-  imports,
-  NuxtCommand as _NuxtCommand,
-  NuxtCommandConfig
-} from '@nuxt/cli'
+import { imports, NuxtCommand, NuxtCommandConfig } from '@nuxt/cli'
 import NuxtConfiguration from '@nuxt/config'
 import { NuxtConfigurationModule } from '@nuxt/config/types/module'
 import { isArray } from 'lodash'
 
-export interface NuxtLaravelHooks {
-  [hook: string]: Array<(...args: any) => void | Promise<void>>
+export interface NuxtLaravelCommandConfig
+  extends NuxtCommandConfig<NuxtLaravelCommand> {
+  addNuxtHook?: (name: string, handler: (...args: any) => void) => void
 }
 
-export type NuxtLaravelOverridesFunction = (
-  cmd: NuxtCommand,
-  options: NuxtConfiguration
-) => NuxtConfiguration | Promise<NuxtConfiguration>
-
-export interface NuxtCommand {
-  cmd: NuxtCommandConfig<NuxtCommand>
+export interface NuxtLaravelCommand {
+  cmd: NuxtLaravelCommandConfig
 }
 
-export class NuxtCommand extends _NuxtCommand {
+export class NuxtLaravelCommand extends NuxtCommand {
   public static readonly CONFIG_KEY = '__nuxt_laravel__'
 
   public static from(
-    cmd: NuxtCommandConfig<NuxtCommand> | NuxtCommand,
+    cmd: NuxtLaravelCommandConfig | NuxtLaravelCommand,
     _argv?: string[]
   ) {
-    if (cmd instanceof NuxtCommand) {
+    if (cmd instanceof NuxtLaravelCommand) {
       return cmd
     }
-    return new NuxtCommand(cmd, _argv)
+    return new NuxtLaravelCommand(cmd, _argv)
   }
+
   public static run(
-    cmd: NuxtCommandConfig<NuxtCommand> | NuxtCommand,
+    cmd: NuxtLaravelCommandConfig | NuxtLaravelCommand,
     _argv?: string[]
   ) {
-    return NuxtCommand.from(cmd, _argv).run()
+    return NuxtLaravelCommand.from(cmd, _argv).run()
   }
 
-  private _nuxtHooks?: NuxtLaravelHooks
-
-  public constructor(cmd: NuxtCommandConfig<NuxtCommand>, _argv?: string[]) {
+  public constructor(cmd: NuxtLaravelCommandConfig, _argv?: string[]) {
     super(cmd, _argv)
-
-    this._nuxtHooks = {}
-  }
-
-  public async run() {
-    // show help if called with invalid arguments
-    if (!this.checkArgs!()) {
-      this.showHelp()
-
-      return
-    }
-
-    await super.run()
   }
 
   public async getNuxt(options: NuxtConfiguration) {
@@ -67,10 +45,10 @@ export class NuxtCommand extends _NuxtCommand {
     const nuxt = new Nuxt(options)
 
     // apply nuxt hooks if they have been provided
-    if (this._nuxtHooks && typeof this._nuxtHooks === 'object') {
-      for (const name in this._nuxtHooks) {
-        if (this._nuxtHooks.hasOwnProperty(name)) {
-          for (const hook of this._nuxtHooks[name]) {
+    if (typeof this.cmd._nuxtHooks === 'object') {
+      for (const name in this.cmd._nuxtHooks) {
+        if (this.cmd._nuxtHooks.hasOwnProperty(name)) {
+          for (const hook of this.cmd._nuxtHooks[name]) {
             nuxt.hook(name, hook)
           }
         }
@@ -103,50 +81,6 @@ export class NuxtCommand extends _NuxtCommand {
 
     return options
   }
-
-  public addNuxtHook?(
-    name: string,
-    handler: (...args: any) => void,
-    addBefore?: boolean
-  ) {
-    this._nuxtHooks![name] = this._nuxtHooks![name] || []
-
-    if (addBefore) {
-      this._nuxtHooks![name].unshift(handler)
-    } else {
-      this._nuxtHooks![name].push(handler)
-    }
-  }
-
-  public checkArgs?() {
-    // only allow one additional argument
-    if (this.argv._.length > 1) {
-      return false
-    }
-
-    // resolve acceptable aliases (flags)
-    const allowedAliases = Object.values(this.cmd.options!).reduce(
-      (aliases, option) => {
-        if (option.alias) {
-          aliases.push(option.alias)
-        }
-
-        return aliases
-      },
-      [] as string[]
-    )
-
-    // resolve acceptable argv keys from options and aliases
-    const allowedOptions = [
-      '_',
-      ...Object.keys(this.cmd.options!),
-      ...allowedAliases
-    ]
-
-    // returns false if argv contains additional options
-    return !Object.keys(this.argv).filter(key => !allowedOptions.includes(key))
-      .length
-  }
 }
 
-export default NuxtCommand
+export default NuxtLaravelCommand

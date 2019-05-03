@@ -1,10 +1,16 @@
+import fs from 'fs'
+
 import { helpSpy, NuxtCommandConfig, versionSpy } from '@nuxt/cli'
 
-import { NuxtCommand } from '../../src/classes/nuxtCommand'
+import NuxtCommand from '../../src/classes/nuxtCommand'
 
-import { getCommand, run } from '../../src/cli'
+import { commands, run } from '../../src/cli'
 import buildCmd from '../../src/subcommands/build'
 import devCmd from '../../src/subcommands/dev'
+
+import execa from 'execa'
+
+jest.mock('execa')
 
 afterEach(() => {
   jest.clearAllMocks()
@@ -12,47 +18,38 @@ afterEach(() => {
 
 const fromSpy = jest.spyOn(NuxtCommand, 'from')
 
-process.argv = process.argv.slice(0, 2)
-const executeWithArgs = async (argv?: string[]) => {
-  if (argv) {
-    process.argv = [...process.argv, ...argv]
-  }
-
-  await run()
-
-  process.argv = process.argv.slice(0, 2)
-}
-
 describe('entry point', () => {
-  describe('getCommand()', () => {
-    const getCommandTest = (
-      argument?: string,
-      expected?: NuxtCommandConfig
-    ) => {
-      const cmd = getCommand(argument)
+  describe('getCommand test', () => {
+    let cmd: NuxtCommandConfig | undefined | null
 
-      expect(cmd).not.toBeNull()
-      expect(cmd).toEqual(expected)
-    }
+    afterEach(() => {
+      cmd = undefined
+    })
 
-    describe('returns dev command', () => {
-      test('without argument', () => {
-        getCommandTest(undefined, devCmd)
+    describe('returns null', () => {
+      afterEach(() => {
+        expect(cmd).toBeNull()
       })
 
-      test('with argument "unknown"', () => {
-        getCommandTest('unknown', devCmd)
+      test('without argument', async () => {
+        cmd = await commands.default()
+      })
+
+      test('with argument "__unkown_command__"', async () => {
+        cmd = await commands.default('__unkown_command__')
       })
     })
 
-    describe('returns the appropiate command', () => {
-      test('with argument "dev"', () => {
-        getCommandTest('dev', devCmd)
-      })
+    test('returns dev command with argument "dev"', async () => {
+      cmd = await commands.default('dev')
 
-      test('with argument "build"', () => {
-        getCommandTest('build', buildCmd)
-      })
+      expect(cmd).toEqual(devCmd)
+    })
+
+    test('returns build command with argument "build"', async () => {
+      cmd = await commands.default('build')
+
+      expect(cmd).toEqual(buildCmd)
     })
   })
 
@@ -72,56 +69,108 @@ describe('entry point', () => {
         } as any)
       })
 
-      test('executes dev command without arguments', async () => {
-        await executeWithArgs()
+      describe('from command line', () => {
+        process.argv = process.argv.slice(0, 2)
+        const executeWithCommandLineArgs = async (argv?: string[]) => {
+          if (argv) {
+            process.argv = [...process.argv, ...argv]
+          }
 
-        runTest(devCmd)
-      })
+          await run()
 
-      test('executes dev command with argument "dev"', async () => {
-        await executeWithArgs(['dev'])
+          process.argv = process.argv.slice(0, 2)
+        }
 
-        runTest(devCmd)
-      })
+        test('executes dev command without arguments', async () => {
+          await executeWithCommandLineArgs()
 
-      test('executes build command with argument "build"', async () => {
-        await executeWithArgs(['build'])
-
-        runTest(buildCmd)
-      })
-
-      describe('preserves commands that are not known commands', () => {
-        const expected = '__test_command__'
-        test('plain argumens', async () => {
-          executeWithArgs([expected])
-
-          runTest(devCmd, [expected])
+          runTest(devCmd)
         })
 
-        test('arguments prefixed with --', async () => {
-          executeWithArgs([`--${expected}`])
+        test('executes dev command with argument "dev"', async () => {
+          await executeWithCommandLineArgs(['dev'])
 
-          runTest(devCmd, [`--${expected}`])
+          runTest(devCmd)
         })
 
-        test('arguments prefixed with -', async () => {
-          executeWithArgs([`-${expected}`])
+        test('executes build command with argument "build"', async () => {
+          await executeWithCommandLineArgs(['build'])
 
-          runTest(devCmd, [`-${expected}`])
+          runTest(buildCmd)
         })
       })
 
-      describe('resolves and unshifts known commands', () => {
-        test('dev', async () => {
-          executeWithArgs(['dev'])
+      describe('from api', () => {
+        test('executes dev command without arguments', async () => {
+          await run()
 
-          runTest(devCmd, [])
+          runTest(devCmd)
         })
 
-        test('build', async () => {
-          executeWithArgs(['build'])
+        test('executes dev command form api', async () => {
+          await run(['dev'])
 
-          runTest(buildCmd, [])
+          runTest(devCmd)
+        })
+
+        test('executes build command form api', async () => {
+          await run(['build'])
+
+          runTest(buildCmd)
+        })
+      })
+    })
+
+    describe('subcommand execution', () => {
+      const expectedCmd: string = '__test_cmd__'
+      let expectedArgs: string[] = []
+
+      afterEach(() => {
+        expect(execa).toHaveBeenCalledWith(
+          `nuxt-laravel-${expectedCmd}`,
+          expectedArgs,
+          expect.any(Object)
+        )
+
+        expectedArgs = []
+      })
+
+      test('proxies unresolved commands', async () => {
+        await run([expectedCmd])
+      })
+
+      test('forwards arguments', async () => {
+        expectedArgs = ['testArg', '--option', '-flag']
+        await run([expectedCmd, ...expectedArgs])
+      })
+
+      describe('fails when', () => {
+        test('command throws', async () => {
+          const expectedErr = '__test_error__'
+          execa.mockImplementationOnce(() => {
+            throw String(expectedErr)
+          })
+
+          try {
+            await run([expectedCmd])
+          } catch (error) {
+            expect(error).toBe(
+              `Failed to run command \`nuxt-laravel-${expectedCmd}\`:\n${expectedErr}`
+            )
+          }
+        })
+
+        test('command not found', async () => {
+          // @ts-ignore
+          execa.mockImplementationOnce(() => {
+            fs.readFileSync('nonexistent')
+          })
+
+          try {
+            await run([expectedCmd])
+          } catch (error) {
+            expect(error).toBe(`Command not found: nuxt-laravel-${expectedCmd}`)
+          }
         })
       })
     })
@@ -138,23 +187,11 @@ describe('entry point', () => {
           })
 
           test('with option --help', async () => {
-            await executeWithArgs(['--help'])
+            await run(['--help'])
           })
 
           test('with flag -h', async () => {
-            await executeWithArgs(['-h'])
-          })
-
-          test('with invalid option', async () => {
-            await executeWithArgs(['--__invalid__'])
-          })
-
-          test('with invalid flag', async () => {
-            await executeWithArgs(['-.'])
-          })
-
-          test('with excessive arguments', async () => {
-            await executeWithArgs(['__test__', '__exessive__'])
+            await run(['-h'])
           })
         })
 
@@ -164,11 +201,11 @@ describe('entry point', () => {
           })
 
           test('with option --version', async () => {
-            await executeWithArgs(['--version'])
+            await run(['--version'])
           })
 
           test('with flag -v', async () => {
-            await executeWithArgs(['-v'])
+            await run(['-v'])
           })
         })
       })
@@ -184,23 +221,11 @@ describe('entry point', () => {
           })
 
           test('with option --help', async () => {
-            await executeWithArgs(['build', '--help'])
+            await run(['build', '--help'])
           })
 
           test('with flag -h', async () => {
-            await executeWithArgs(['build', '-h'])
-          })
-
-          test('with invalid option', async () => {
-            await executeWithArgs(['build', '--__invalid__'])
-          })
-
-          test('with invalid flag', async () => {
-            await executeWithArgs(['build', '-.'])
-          })
-
-          test('with excessive arguments', async () => {
-            await executeWithArgs(['build', '__test__', '__exessive__'])
+            await run(['build', '-h'])
           })
         })
 
@@ -210,11 +235,11 @@ describe('entry point', () => {
           })
 
           test('with option --version', async () => {
-            await executeWithArgs(['build', '--version'])
+            await run(['build', '--version'])
           })
 
           test('with flag -v', async () => {
-            await executeWithArgs(['build', '-v'])
+            await run(['build', '-v'])
           })
         })
       })

@@ -8,14 +8,14 @@ import fs from 'fs-extra'
 
 jest.mock('fs-extra')
 
-import { NuxtCommand } from '../../../src/classes/nuxtCommand'
+import NuxtCommand from '../../../src/classes/nuxtCommand'
 import buildCmd from '../../../src/subcommands/build'
 import { CommandSimulator, createCommandSimulator } from '../../utils'
 
 const html = '__render_test__'
 
 const renderSpy = jest.fn().mockResolvedValue({ html })
-const addHookSpy = jest.spyOn(NuxtCommand.prototype, 'addNuxtHook')
+const addHookSpy = jest.spyOn(buildCmd, 'addNuxtHook')
 const fromSpy = jest.spyOn(NuxtCommand, 'from')
 
 describe('nuxt laravel build', () => {
@@ -28,14 +28,10 @@ describe('nuxt laravel build', () => {
 
   describe('full run', () => {
     beforeAll(async () => {
-      delete process.env.NODE_ENV
-
       envSetup(await commandSimulator())
     })
 
     afterAll(() => {
-      process.env.NODE_ENV = 'test'
-
       envTeardown()
     })
 
@@ -52,7 +48,6 @@ describe('nuxt laravel build', () => {
       })
 
       test('environment is correct', () => {
-        expect(process.env.NODE_ENV).toBe('production')
         expect(options!.dev).toBe(false)
         expect(options!.mode).toBe('spa')
       })

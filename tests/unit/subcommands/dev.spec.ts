@@ -7,12 +7,10 @@ import { NuxtConfigurationModule } from '@nuxt/config/types/module'
 import { NuxtConfigurationRouter } from '@nuxt/config/types/router'
 
 import execa from 'execa'
-import opener from 'opener'
 
 jest.mock('execa')
-jest.mock('opener')
 
-import { NuxtCommand } from '../../../src/classes/nuxtCommand'
+import NuxtCommand from '../../../src/classes/nuxtCommand'
 import dev from '../../../src/subcommands/dev'
 import { CommandSimulator, createCommandSimulator } from '../../utils'
 
@@ -33,7 +31,7 @@ describe('nuxt laravel dev', () => {
     defineExpected()
   })
 
-  test('throws error if execa fails', async () => {
+  test('throws error if laravel can not be found', async () => {
     const testError = '__ERROR__'
 
     execa.mockImplementationOnce(() => {
@@ -48,18 +46,22 @@ describe('nuxt laravel dev', () => {
       )
     }
 
+    expect(nuxtSpy).not.toHaveBeenCalled()
+
     reset()
   })
 
   describe('full run', () => {
     beforeAll(async () => {
-      delete process.env.NODE_ENV
       options = await commandSimulator()
     })
 
     afterAll(() => {
-      process.env.NODE_ENV = 'test'
       reset()
+    })
+
+    test('starts laravel artisan testserver', () => {
+      laravelTest()
     })
 
     test('starts server and builds', () => {
@@ -69,17 +71,12 @@ describe('nuxt laravel dev', () => {
       expect(buildSpy).toHaveBeenCalledTimes(1)
     })
 
-    test('starts laravel artisan testserver', () => {
-      laravelTest()
-    })
-
     describe('options test', () => {
       test('options are set', () => {
         expect(options).toBeDefined()
       })
 
-      test('environment is correct', () => {
-        expect(process.env.NODE_ENV).toBe('development')
+      test('environment settings are correct', () => {
         expect(options!.dev).toBe(true)
         expect(options!.mode).toBe('spa')
       })
@@ -127,14 +124,63 @@ describe('nuxt laravel dev', () => {
           extendRoutesTest(extendRoutes, { name: 'index' })
         })
 
-        test('resolves route with name "index__en"', () => {
-          extendRoutesTest(extendRoutes, { name: 'index__en' })
+        test('resolves route with name "index-locale"', () => {
+          extendRoutesTest(extendRoutes, { name: 'index-locale' })
+        })
+
+        test('throws if index could not be resolved', () => {
+          try {
+            extendRoutesTest(extendRoutes, { path: '/subpage' })
+          } catch (error) {
+            expect(error).toBe('Unable to resolve index route')
+          }
         })
       })
     })
   })
 
-  describe('test cli arguments', () => {
+  describe('i18n compatibility', () => {
+    const getExtendRoutesFromI18nConfigCommand = async (
+      i18nConf: object = {}
+    ) => {
+      return (await commandSimulator({
+        modules: [['nuxt-i18n', i18nConf]]
+      }))!.router!.extendRoutes
+    }
+
+    afterEach(() => {
+      reset()
+    })
+
+    test('does not resolve without default locale', async () => {
+      const extendRoutes = await getExtendRoutesFromI18nConfigCommand()
+
+      try {
+        extendRoutesTest(extendRoutes, { name: 'index___test' })
+      } catch (error) {
+        expect(error).toBe('Unable to resolve index route')
+      }
+    })
+
+    test('resolves i18n routes if locale is configured', async () => {
+      const extendRoutes = await getExtendRoutesFromI18nConfigCommand({
+        defaultLocale: 'test'
+      })
+
+      extendRoutesTest(extendRoutes, { name: 'index___test' })
+    })
+
+    test('respects name separator setting', async () => {
+      const extendRoutes = await getExtendRoutesFromI18nConfigCommand({
+        defaultLocale: 'test',
+        routesNameSeparator: '#'
+      })
+
+      extendRoutesTest(extendRoutes, { name: 'index#test' })
+    })
+  })
+
+  describe.skip('test cli arguments', () => {
     afterEach(() => {
       expect(options).toBeDefined()
 
@@ -186,65 +232,6 @@ describe('nuxt laravel dev', () => {
         ])
       })
     })
-
-    describe('changes hostname', () => {
-      beforeAll(() => {
-        defineExpected({
-          server: {
-            host: 'testhost.tld'
-          }
-        })
-      })
-
-      afterAll(() => {
-        defineExpected()
-      })
-
-      test('with option --hostname', async () => {
-        options = await commandSimulator(['--hostname', expected.server.host])
-      })
-
-      test('with flag -H', async () => {
-        options = await commandSimulator(['-H', expected.server.host])
-      })
-    })
-
-    describe('changes port', () => {
-      beforeAll(() => {
-        defineExpected({
-          server: {
-            port: 8080
-          }
-        })
-      })
-
-      afterAll(() => {
-        defineExpected()
-      })
-
-      test('with option --port', async () => {
-        options = await commandSimulator(['--port', `${expected.server.port}`])
-      })
-
-      test('with flag -p', async () => {
-        options = await commandSimulator(['-p', `${expected.server.port}`])
-      })
-    })
-
-    describe('calls opener', () => {
-      afterEach(() => {
-        expect(opener).toHaveBeenCalled()
-        expect(opener).toHaveBeenCalledWith('__listener_test__')
-      })
-
-      test('option --open calls opener', async () => {
-        options = await commandSimulator(['--open'])
-      })
-
-      test('flag -o calls opener', async () => {
-        options = await commandSimulator(['-o'])
-      })
-    })
   })
 
   describe('test with simulated nuxt.config', () => {
@@ -291,56 +278,56 @@ describe('nuxt laravel dev', () => {
     })
 
     describe('does not override existing modules', () => {
-      let m: NuxtConfigurationModule | undefined
+      let nuxtModule: NuxtConfigurationModule | undefined
 
       afterEach(async () => {
-        expect(m).toBeDefined()
+        expect(nuxtModule).toBeDefined()
 
         options = await commandSimulator([], {
-          modules: [m!]
+          modules: [nuxtModule!]
         })
 
         expect(options).toBeDefined()
         expect(options!.modules).toEqual(
-          expect.arrayContaining(['@nuxtjs/axios', m!])
+          expect.arrayContaining(['@nuxtjs/axios', nuxtModule!])
         )
 
-        m = undefined
+        nuxtModule = undefined
         reset()
       })
 
       test('defined as plain string', () => {
-        m = '__test_module__'
+        nuxtModule = '__test_module__'
       })
 
       test('defined as array with configuration', () => {
-        m = ['__test_module__', { testConfig: '__test_config__' }]
+        nuxtModule = ['__test_module__', { testConfig: '__test_config__' }]
       })
     })
 
     describe('does not duplicate @nuxtjs/axios module', () => {
-      let m: NuxtConfigurationModule | undefined
+      let axiosModule: NuxtConfigurationModule | undefined
 
       afterEach(async () => {
-        expect(m).toBeDefined()
+        expect(axiosModule).toBeDefined()
 
         options = await commandSimulator([], {
-          modules: [m!]
+          modules: [axiosModule!]
         })
 
         expect(options).toBeDefined()
-        expect(options!.modules).toEqual([m])
+        expect(options!.modules).toEqual([axiosModule])
 
-        m = undefined
+        axiosModule = undefined
         reset()
       })
 
       test('defined as plain string', () => {
-        m = '@nuxtjs/axios'
+        axiosModule = '@nuxtjs/axios'
       })
 
       test('defined as array with configuration', () => {
-        m = ['@nuxtjs/axios', { testConfig: '__test_config__' }]
+        axiosModule = ['@nuxtjs/axios', { testConfig: '__test_config__' }]
       })
     })
   })
