@@ -68,9 +68,11 @@ If laravel path is relative it is resolved relative to `process.cwd()`.
 Render path is provided as environment variable `NUXT_URL` to `php artisan serve`.  
 Use it in your `routes/web.php` to redirect all web traffic to or just use [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt).
 
-**Example `routes/web.php`:**
+> **!!! Attention !!!:** You have to use PHPs `getenv()` instead of laravels `env()` as it ignores putenv vars.
 
-without `nuxt-laravel`
+**Example without `nuxt-laravel`:**
+
+`routes/web.php`:
 
 ```php
 // ...
@@ -86,12 +88,14 @@ Route::get(
       }
 
       // Fetch and display the page from the render path on nuxt dev server
-      return file_get_contents(env('NUXT_URL', storage_path('app/index.html')));
+      return file_get_contents(getenv('NUXT_URL') ?: storage_path('app/index.html'));
     }
 )->where('uri', '.*');
 ```
 
-with `nuxt-laravel`
+**Example with `nuxt-laravel`:**
+
+`routes/web.php`:
 
 ```php
 // ...
@@ -100,6 +104,20 @@ Route::get(
     '{uri}',
     '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
 )->where('uri', '.*');
+```
+
+`config/nuxt.php`:
+
+```php
+return [
+    /**
+     * In production, the SPA page will be located in the filesystem.
+     *
+     * In development, the SPA page will be on an external server. This
+     * page will be passed as an environment variable (NUXT_URL).
+     */
+    'page' => getenv('NUXT_URL') ?: storage_path('app/index.html')
+];
 ```
 
 ### Production
