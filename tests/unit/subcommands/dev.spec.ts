@@ -85,6 +85,7 @@ describe('nuxt laravel dev', () => {
         expect(options!.axios).toBeDefined()
         expect(options!.axios).toEqual(
           expect.objectContaining({
+            prefix: '/_laravel',
             proxy: true
           })
         )
@@ -382,8 +383,9 @@ const proxyTest = (options: NuxtConfiguration) => {
   expect(options!.proxy).toEqual(
     expect.arrayContaining([
       [
-        ['**/*', `!${expected.server.path}`],
+        '/_laravel',
         {
+          pathRewrite: { '^/_laravel': '' },
           target: expected.laravel.url
         }
       ]

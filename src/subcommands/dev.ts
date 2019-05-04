@@ -103,13 +103,15 @@ const config: NuxtLaravelCommandConfig = {
         const overrides: typeof options = {
           // use @nuxtjs/proxy module
           axios: {
+            prefix: '/_laravel',
             proxy: true
           },
           // proxy all calls except the render path to laravel
           proxy: [
             [
-              ['**/*', `!${argv['render-path']}`],
+              '/_laravel',
               {
+                pathRewrite: { '^/_laravel': '' },
                 target: `http://${options.server!.host}:${+options.server!
                   .port! + 1}`
               }
