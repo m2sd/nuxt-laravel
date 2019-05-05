@@ -65,10 +65,30 @@ If laravel path is relative it is resolved relative to `process.cwd()`.
 
 #### Laravel integration in development
 
-Render path is provided as environment variable `NUXT_URL` to `php artisan serve`.  
+Render path and app url are provided as environment variables `NUXT_URL` and `APP_URL` respectively to `php artisan serve`.  
 Use it in your `routes/web.php` to redirect all web traffic to or just use [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt).
 
 > **!!! Attention !!!:** You have to use PHPs `getenv()` instead of laravels `env()` as it ignores putenv vars.
+
+`config/app.php`:
+
+```php
+    // ...
+    /*
+    |--------------------------------------------------------------------------
+    | Application URL
+    |--------------------------------------------------------------------------
+    |
+    | This URL is used by the console to properly generate URLs when using
+    | the Artisan command line tool. You should set this to the root of
+    | your application so that it is used when running Artisan tasks.
+    |
+    */
+
+    'url' => getenv('APP_URL') ?: 'http://localhost',
+
+    // ...
+```
 
 **Example without `nuxt-laravel`:**
 
