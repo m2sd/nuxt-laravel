@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="2.0.4"></a>
+## [2.0.4](https://github.com/m2sd/nuxt-laravel/compare/v2.0.3...v2.0.4) (2019-05-05)
+
+
+### Reverts
+
+* **command/dev:** revert to previous implementation ([1d78dd8](https://github.com/m2sd/nuxt-laravel/commit/1d78dd8))
+
+
+
 <a name="2.0.3"></a>
 ## [2.0.3](https://github.com/m2sd/nuxt-laravel/compare/v2.0.2...v2.0.3) (2019-05-04)
 
