@@ -71,8 +71,8 @@ const config: NuxtLaravelCommandConfig = {
           // add hook to callect files to delete after generation
           cmd.cmd.addNuxtHook!('generate:done', ({ options }) => {
             cmd.argv.delete = [
-              path.resolve(options.rootDir!, options.generate!.dir!),
-              path.resolve(options.rootDir!, options.buildDir!)
+              path.resolve(options.rootDir, options.generate.dir),
+              path.resolve(options.rootDir, options.buildDir)
             ]
           })
         }
@@ -91,7 +91,7 @@ const config: NuxtLaravelCommandConfig = {
 
           // resolve the file path relative to configured rootDir
           const destination = path.resolve(
-            options.rootDir!,
+            options.rootDir,
             `${argv['file-path']}`
           )
 
@@ -113,8 +113,8 @@ const config: NuxtLaravelCommandConfig = {
         // add hook move built assets to public path
         cmd.cmd.addNuxtHook!('generate:done', ({ options }) => {
           const destination = path.resolve(
-            path.resolve(options.rootDir!, `${argv['public-path']}`) +
-              options.build!.publicPath
+            path.resolve(options.rootDir, `${argv['public-path']}`) +
+              options.build.publicPath
           )
 
           // create directory if it does not exist
@@ -123,7 +123,11 @@ const config: NuxtLaravelCommandConfig = {
             fs.mkdirpSync(dir)
           }
 
-          const staticDir = path.join(options.srcDir, 'static')
+          const staticDir = path.resolve(
+            options.rootDir,
+            options.srcDir,
+            'static'
+          )
 
           if (fs.existsSync(staticDir)) {
             fs.copySync(path.resolve(options.srcDir, 'static'), destination)
@@ -131,8 +135,8 @@ const config: NuxtLaravelCommandConfig = {
 
           fs.moveSync(
             path.resolve(
-              path.resolve(options.rootDir!, options.generate!.dir) +
-                options.build!.publicPath!
+              path.resolve(options.rootDir, options.generate.dir) +
+                options.build.publicPath
             ),
             destination,
             {
