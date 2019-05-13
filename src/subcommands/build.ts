@@ -112,27 +112,31 @@ const config: NuxtLaravelCommandConfig = {
       prepare: (cmd, _, argv) => {
         // add hook move built assets to public path
         cmd.cmd.addNuxtHook!('generate:done', ({ options }) => {
+          const publicPath = path.resolve(
+            options.rootDir,
+            `${argv['public-path']}`
+          )
+
           const destination = path.resolve(
-            path.resolve(options.rootDir, `${argv['public-path']}`) +
-              options.build.publicPath
+            publicPath + options.build.publicPath
           )
 
           // create directory if it does not exist
-          const dir = path.dirname(destination)
-          if (!fs.existsSync(dir)) {
-            fs.mkdirpSync(dir)
+          if (!fs.existsSync(destination)) {
+            fs.mkdirpSync(destination)
           }
 
+          // copy static assets to public root
           const staticDir = path.resolve(
             options.rootDir,
             options.srcDir,
             'static'
           )
-
           if (fs.existsSync(staticDir)) {
-            fs.copySync(path.resolve(options.srcDir, 'static'), destination)
+            fs.copySync(staticDir, publicPath)
           }
 
+          // move compiled assets to public destination
           fs.moveSync(
             path.resolve(
               path.resolve(options.rootDir, options.generate.dir) +

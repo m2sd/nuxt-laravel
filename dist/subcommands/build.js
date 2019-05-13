@@ -95,17 +95,18 @@ const config = {
             prepare: (cmd, _, argv) => {
                 // add hook move built assets to public path
                 cmd.cmd.addNuxtHook('generate:done', ({ options }) => {
-                    const destination = path_1.default.resolve(path_1.default.resolve(options.rootDir, `${argv['public-path']}`) +
-                        options.build.publicPath);
+                    const publicPath = path_1.default.resolve(options.rootDir, `${argv['public-path']}`);
+                    const destination = path_1.default.resolve(publicPath + options.build.publicPath);
                     // create directory if it does not exist
-                    const dir = path_1.default.dirname(destination);
-                    if (!fs_extra_1.default.existsSync(dir)) {
-                        fs_extra_1.default.mkdirpSync(dir);
+                    if (!fs_extra_1.default.existsSync(destination)) {
+                        fs_extra_1.default.mkdirpSync(destination);
                     }
+                    // copy static assets to public root
                     const staticDir = path_1.default.resolve(options.rootDir, options.srcDir, 'static');
                     if (fs_extra_1.default.existsSync(staticDir)) {
-                        fs_extra_1.default.copySync(path_1.default.resolve(options.srcDir, 'static'), destination);
+                        fs_extra_1.default.copySync(staticDir, publicPath);
                     }
+                    // move compiled assets to public destination
                     fs_extra_1.default.moveSync(path_1.default.resolve(path_1.default.resolve(options.rootDir, options.generate.dir) +
                         options.build.publicPath), destination, {
                         overwrite: true
