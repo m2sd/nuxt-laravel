@@ -102,6 +102,10 @@ const config = {
                     if (!fs_extra_1.default.existsSync(dir)) {
                         fs_extra_1.default.mkdirpSync(dir);
                     }
+                    const staticDir = path_1.default.join(options.srcDir, 'static');
+                    if (fs_extra_1.default.existsSync(staticDir)) {
+                        fs_extra_1.default.copySync(path_1.default.resolve(options.srcDir, 'static'), destination);
+                    }
                     fs_extra_1.default.moveSync(path_1.default.resolve(path_1.default.resolve(options.rootDir, options.generate.dir) +
                         options.build.publicPath), destination, {
                         overwrite: true

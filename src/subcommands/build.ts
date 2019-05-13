@@ -123,6 +123,12 @@ const config: NuxtLaravelCommandConfig = {
             fs.mkdirpSync(dir)
           }
 
+          const staticDir = path.join(options.srcDir, 'static')
+
+          if (fs.existsSync(staticDir)) {
+            fs.copySync(path.resolve(options.srcDir, 'static'), destination)
+          }
+
           fs.moveSync(
             path.resolve(
               path.resolve(options.rootDir!, options.generate!.dir) +
