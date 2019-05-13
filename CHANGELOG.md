@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="2.1.2"></a>
+## [2.1.2](https://github.com/m2sd/nuxt-laravel/compare/v2.1.1...v2.1.2) (2019-05-13)
+
+
+### Bug Fixes
+
+* **command/build:** optimize path resolution ([cc97a4b](https://github.com/m2sd/nuxt-laravel/commit/cc97a4b))
+
+
+
 <a name="2.1.1"></a>
 ## [2.1.1](https://github.com/m2sd/nuxt-laravel/compare/v2.1.0...v2.1.1) (2019-05-13)
 
