@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="2.1.3"></a>
+## [2.1.3](https://github.com/m2sd/nuxt-laravel/compare/v2.1.2...v2.1.3) (2019-05-24)
+
+
+### Bug Fixes
+
+* **command/dev:** use ip for localhost to avoid ip6 conflicts ([ddd6fed](https://github.com/m2sd/nuxt-laravel/commit/ddd6fed))
+
+
+
 <a name="2.1.2"></a>
 ## [2.1.2](https://github.com/m2sd/nuxt-laravel/compare/v2.1.1...v2.1.2) (2019-05-13)
 
