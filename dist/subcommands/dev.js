@@ -16,6 +16,7 @@ const config = {
     /* tslint:disable:object-literal-sort-keys */
     name: 'nuxt-laravel-dev',
     description: 'Start laravel development server and run the application in development mode (e.g. hot-code reloading, error reporting)',
+    usage: 'laravel dev <dir>',
     options: Object.assign({}, cli_chunk3_1.common, cli_chunk3_1.server, { open: {
             alias: 'o',
             description: 'Opens the server listeners url in the default browser',
@@ -97,7 +98,6 @@ const config = {
             },
             type: 'string'
         } }),
-    usage: 'laravel dev <dir>',
     async run(cmd) {
         const options = await cli_1.loadNuxtConfig(cmd.argv);
         // retrieve dev server URL
@@ -109,7 +109,7 @@ const config = {
             execa_1.default('php', [
                 'artisan',
                 'serve',
-                `--host=${nuxtUrl.hostname}`,
+                `--host=${nuxtUrl.hostname === 'localhost' ? '127.0.0.1' : nuxtUrl.hostname}`,
                 `--port=${+nuxtUrl.port + 1}`
             ], {
                 cwd: laravelPath,

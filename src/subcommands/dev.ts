@@ -20,6 +20,7 @@ const config: NuxtLaravelCommandConfig = {
   name: 'nuxt-laravel-dev',
   description:
     'Start laravel development server and run the application in development mode (e.g. hot-code reloading, error reporting)',
+  usage: 'laravel dev <dir>',
   options: {
     ...common,
     ...server,
@@ -132,7 +133,6 @@ const config: NuxtLaravelCommandConfig = {
       type: 'string'
     }
   },
-  usage: 'laravel dev <dir>',
   async run(cmd) {
     const options = await loadNuxtConfig(cmd.argv)
 
@@ -155,7 +155,9 @@ const config: NuxtLaravelCommandConfig = {
         [
           'artisan',
           'serve',
-          `--host=${nuxtUrl.hostname}`,
+          `--host=${
+            nuxtUrl.hostname === 'localhost' ? '127.0.0.1' : nuxtUrl.hostname
+          }`,
           `--port=${+nuxtUrl.port + 1}`
         ],
         {

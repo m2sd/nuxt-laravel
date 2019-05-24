@@ -409,7 +409,11 @@ const laravelTest = () => {
     expect.arrayContaining([
       'artisan',
       'serve',
-      `--host=${expected.server.host}`,
+      `--host=${
+        expected.server.host === 'localhost'
+          ? '127.0.0.1'
+          : expected.server.host
+      }`,
       `--port=${expected.server.port + 1}`
     ]),
     expect.objectContaining({
