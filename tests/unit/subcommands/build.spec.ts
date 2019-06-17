@@ -28,18 +28,20 @@ describe('nuxt laravel build', () => {
 
   describe('full run', () => {
     beforeAll(async () => {
+      ;(fs.existsSync as jest.Mock).mockReturnValue(true)
       envSetup(await commandSimulator())
     })
 
     afterAll(() => {
+      ;(fs.existsSync as jest.Mock).mockReset()
       envTeardown()
     })
 
     test('generates files', () => {
       expect(nuxtSpy).toHaveBeenCalledTimes(1)
       expect(readySpy).toHaveBeenCalledTimes(1)
-      expect(buildSpy).not.toHaveBeenCalled()
-      expect(generateSpy).toHaveBeenCalledTimes(1)
+      expect(generateSpy).not.toHaveBeenCalled()
+      expect(buildSpy).toHaveBeenCalledTimes(1)
     })
 
     describe('options test', () => {
@@ -51,41 +53,42 @@ describe('nuxt laravel build', () => {
         expect(options!.dev).toBe(false)
         expect(options!.mode).toBe('spa')
       })
+    })
 
-      test('nuxt hook has been called three times', () => {
-        expect(addHookSpy).toHaveBeenCalledTimes(3)
-        expect(hookSpy).toHaveBeenCalledTimes(3)
+    test('nuxt hook has been called three times', () => {
+      expect(addHookSpy).toHaveBeenCalledTimes(3)
+      expect(hookSpy).toHaveBeenCalledTimes(3)
+    })
+
+    describe('test hooks', () => {
+      test('index file is generated and written to path', () => {
+        filePathTest()
       })
 
-      describe('test hooks', () => {
-        test('index file is generated and written to path', () => {
-          filePathTest()
+      test('assets are deployed correctly', () => {
+        staticDirTest()
+        publicPathTest()
+      })
+
+      describe('build files are removed', () => {
+        let instance: NuxtCommand
+        beforeAll(() => {
+          expect(fromSpy.mock.results[0].type).toBe('return')
+
+          instance = fromSpy.mock.results[0].value
         })
 
-        test('assets are deployed', () => {
-          publicPathTest()
+        test('destinations are collected', () => {
+          expect(instance.argv.delete).toEqual(
+            expect.arrayContaining([...expected.resolved!.remove])
+          )
         })
 
-        describe('build files are removed', () => {
-          let instance: NuxtCommand
-          beforeAll(() => {
-            expect(fromSpy.mock.results[0].type).toBe('return')
+        test('destinations are removed on command run', async () => {
+          await buildCmd!.run!(instance)
 
-            instance = fromSpy.mock.results[0].value
-          })
-
-          test('destinations are collected', () => {
-            expect(instance.argv.delete).toEqual(
-              expect.arrayContaining([...expected.resolved!.remove])
-            )
-          })
-
-          test('destinations are removed on command run', async () => {
-            await buildCmd!.run!(instance)
-
-            expected.resolved!.remove.forEach((rmPath, i) => {
-              expect(fs.removeSync).toHaveBeenNthCalledWith(i + 1, rmPath)
-            })
+          expected.resolved!.remove.forEach((rmPath, i) => {
+            expect(fs.removeSync).toHaveBeenNthCalledWith(i + 1, rmPath)
           })
         })
       })
@@ -176,12 +179,15 @@ describe('nuxt laravel build', () => {
 
     describe('changes public path', () => {
       afterEach(async () => {
+        staticDirTest()
         publicPathTest()
+        ;(fs.existsSync as jest.Mock).mockReset()
       })
 
       describe('with option --public-path', () => {
         test('relative path is resolved correctly', async () => {
           const relPath = 'path'
+          ;(fs.existsSync as jest.Mock).mockReturnValue(true)
           await envSetup(await commandSimulator(['--public-path', relPath]), {
             publicPath: relPath
           })
@@ -189,6 +195,7 @@ describe('nuxt laravel build', () => {
 
         test('absolute path is resolved correctly', async () => {
           const absPath = '/path'
+          ;(fs.existsSync as jest.Mock).mockReturnValue(true)
           await envSetup(await commandSimulator(['--public-path', absPath]), {
             publicPath: absPath
           })
@@ -196,6 +203,9 @@ describe('nuxt laravel build', () => {
 
         test('nonexistent path is created', async () => {
           const nullPath = '__test_path__'
+          ;(fs.existsSync as jest.Mock).mockImplementation(
+            (value: string) => !value.endsWith(nullPath)
+          )
           await envSetup(await commandSimulator(['--public-path', nullPath]), {
             publicPath: nullPath
           })
@@ -225,6 +235,37 @@ describe('nuxt laravel build', () => {
       })
     })
   })
+
+  describe('test with simulated nuxt.config', () => {
+    describe('respects router.base setting', () => {
+      beforeAll(async () => {
+        ;(fs.existsSync as jest.Mock).mockReturnValue(true)
+        await envSetup(
+          await commandSimulator([], {
+            router: {
+              base: '/test/'
+            }
+          }),
+          {
+            routerBase: 'test'
+          }
+        )
+      })
+
+      afterAll(() => {
+        ;(fs.existsSync as jest.Mock).mockReset()
+        envTeardown()
+      })
+
+      test('deploys static assets to public root', () => {
+        staticDirTest()
+      })
+
+      test('deploys generated assets to router.base subdirectory', () => {
+        publicPathTest()
+      })
+    })
+  })
 })
 
 let options: NuxtConfiguration | undefined
@@ -232,6 +273,7 @@ let options: NuxtConfiguration | undefined
 let expected: {
   filePath: string
   publicPath: string
+  routerBase: string
   resolved?: {
     filePath: string
     assets: {
@@ -239,12 +281,17 @@ let expected: {
       to: string
     }
     remove: string[]
+    static: {
+      from: string
+      to: string
+    }
   }
 }
 
 interface Expected {
   filePath?: string
   publicPath?: string
+  routerBase?: string
 }
 
 const filePathTest = () => {
@@ -255,6 +302,13 @@ const filePathTest = () => {
     expected.resolved!.filePath,
     html,
     'utf-8'
+  )
+}
+
+const staticDirTest = () => {
+  expect(fs.copySync).toHaveBeenCalledWith(
+    expected.resolved!.static.from,
+    expected.resolved!.static.to
   )
 }
 
@@ -271,7 +325,8 @@ const publicPathTest = () => {
 const defineExpected = (custom?: Expected) => {
   expected = defaultsDeep(custom || {}, {
     filePath: 'storage/app/index.html',
-    publicPath: 'public'
+    publicPath: 'public',
+    routerBase: ''
   })
 }
 
@@ -289,7 +344,7 @@ const runHooks = async () => {
     await promise
 
     expect(call).toEqual(
-      expect.arrayContaining(['generate:done', expect.any(Function)])
+      expect.arrayContaining(['build:done', expect.any(Function)])
     )
     return await call[1](generator)
   }, Promise.resolve())
@@ -302,29 +357,42 @@ const envSetup = async (config?: NuxtConfiguration, exp?: Expected) => {
 
   expect(options).toBeDefined()
   expect(options!.rootDir).toEqual(expect.any(String))
-  expect(options!.generate).toEqual(
-    expect.objectContaining({
-      dir: expect.any(String)
-    })
-  )
+  expect(options!.buildDir).toEqual(expect.any(String))
   expect(options!.build).toEqual(
     expect.objectContaining({
       publicPath: expect.any(String)
     })
   )
 
-  const publicRoot = path.resolve(options!.rootDir!, expected.publicPath)
+  const assetsRoot = path.resolve(
+    options!.rootDir!,
+    expected.publicPath,
+    expected.routerBase
+  )
 
   expected.resolved = {
     assets: {
-      from: path.resolve(options!.generate!.dir + options!.build!.publicPath!),
-      to: path.resolve(publicRoot + options!.build!.publicPath!)
+      from: path.resolve(
+        options!.rootDir!,
+        options!.buildDir!,
+        'dist',
+        'client'
+      ),
+      to: path.resolve(
+        assetsRoot,
+        options!.build!.publicPath!.replace(/^\//, '')
+      )
     },
     filePath: path.resolve(options!.rootDir!, expected.filePath),
-    remove: [
-      path.resolve(options!.rootDir!, options!.generate!.dir!),
-      path.resolve(options!.rootDir!, options!.buildDir!)
-    ]
+    remove: [path.resolve(options!.rootDir!, options!.buildDir!)],
+    static: {
+      from: path.resolve(
+        options!.rootDir!,
+        options!.srcDir!,
+        options!.dir.static
+      ),
+      to: path.resolve(options!.rootDir!, expected.publicPath)
+    }
   }
 
   await runHooks()

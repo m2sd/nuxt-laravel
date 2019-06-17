@@ -45,12 +45,6 @@ const config: NuxtLaravelCommandConfig = {
         }
       }
     },
-    generate: {
-      type: 'boolean',
-      default: true,
-      description:
-        "Don't generate static version for SPA mode (useful for nuxt start)"
-    },
     quiet: {
       alias: 'q',
       type: 'boolean',
@@ -69,11 +63,8 @@ const config: NuxtLaravelCommandConfig = {
       prepare: (cmd, _, argv) => {
         if (argv.delete) {
           // add hook to callect files to delete after generation
-          cmd.cmd.addNuxtHook!('generate:done', ({ options }) => {
-            cmd.argv.delete = [
-              path.resolve(options.rootDir, options.generate.dir),
-              path.resolve(options.rootDir, options.buildDir)
-            ]
+          cmd.cmd.addNuxtHook!('build:done', ({ options }) => {
+            cmd.argv.delete = [path.resolve(options.rootDir, options.buildDir)]
           })
         }
       }
@@ -84,7 +75,7 @@ const config: NuxtLaravelCommandConfig = {
       description: 'Location for the SPA index file',
       prepare: (cmd, _, argv) => {
         // add hook to output index file
-        cmd.cmd.addNuxtHook!('generate:done', async ({ options, nuxt }) => {
+        cmd.cmd.addNuxtHook!('build:done', async ({ options, nuxt }) => {
           const { html } = await nuxt.server.renderRoute('/', {
             url: '/'
           })
@@ -110,48 +101,57 @@ const config: NuxtLaravelCommandConfig = {
       default: 'public',
       description: 'The folder where laravel serves assets from',
       prepare: (cmd, _, argv) => {
-        // add hook move built assets to public path
-        cmd.cmd.addNuxtHook!('generate:done', ({ options }) => {
-          const publicPath = path.resolve(
-            options.rootDir,
-            `${argv['public-path']}`
-          )
+        if (argv['public-path']) {
+          // add hook move built assets to public path
+          cmd.cmd.addNuxtHook!('build:done', ({ options }) => {
+            // resolve public root for static assets
+            const publicRoot = path.resolve(
+              options.rootDir,
+              `${argv['public-path']}`
+            )
 
-          const destination = path.resolve(
-            publicPath + options.build.publicPath
-          )
-
-          // create directory if it does not exist
-          if (!fs.existsSync(destination)) {
-            fs.mkdirpSync(destination)
-          }
-
-          // copy static assets to public root
-          const staticDir = path.resolve(
-            options.rootDir,
-            options.srcDir,
-            'static'
-          )
-          if (fs.existsSync(staticDir)) {
-            fs.copySync(staticDir, publicPath)
-          }
-
-          // move compiled assets to public destination
-          fs.moveSync(
-            path.resolve(
-              path.resolve(options.rootDir, options.generate.dir) +
-                options.build.publicPath
-            ),
-            destination,
-            {
-              overwrite: true
+            // resolve public path for compiled assets
+            let assetsPath = ''
+            if (options.router && options.router.base) {
+              assetsPath = options.router.base.replace(/^\/$/g, '') + '/'
             }
-          )
-        })
+            assetsPath += options.build.publicPath.replace(/^\//, '')
+            const publicPath = path.resolve(
+              publicRoot,
+              assetsPath.replace(/^\//, '')
+            )
+
+            // create directory if it does not exist
+            if (!fs.existsSync(publicPath)) {
+              fs.mkdirpSync(publicPath)
+            }
+
+            // copy static assets to public root
+            const staticDir = path.resolve(
+              options.rootDir,
+              options.srcDir,
+              options.dir.static
+            )
+            if (fs.existsSync(staticDir)) {
+              fs.copySync(staticDir, publicRoot)
+            }
+
+            // move compiled assets to public path
+            fs.moveSync(
+              path.resolve(options.rootDir, options.buildDir, 'dist', 'client'),
+              publicPath,
+              {
+                overwrite: true
+              }
+            )
+          })
+        }
       }
     }
   },
   async run(cmd) {
+    cmd.argv.generate = false
+
     const buildCmd = await commands.default('build')
 
     await buildCmd!.run!(cmd)

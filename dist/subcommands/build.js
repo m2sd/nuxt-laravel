@@ -39,10 +39,6 @@ const config = {
                     options.vue.config.devtools = true;
                 }
             }
-        }, generate: {
-            type: 'boolean',
-            default: true,
-            description: "Don't generate static version for SPA mode (useful for nuxt start)"
         }, quiet: {
             alias: 'q',
             type: 'boolean',
@@ -60,11 +56,8 @@ const config = {
             prepare: (cmd, _, argv) => {
                 if (argv.delete) {
                     // add hook to callect files to delete after generation
-                    cmd.cmd.addNuxtHook('generate:done', ({ options }) => {
-                        cmd.argv.delete = [
-                            path_1.default.resolve(options.rootDir, options.generate.dir),
-                            path_1.default.resolve(options.rootDir, options.buildDir)
-                        ];
+                    cmd.cmd.addNuxtHook('build:done', ({ options }) => {
+                        cmd.argv.delete = [path_1.default.resolve(options.rootDir, options.buildDir)];
                     });
                 }
             }
@@ -74,7 +67,7 @@ const config = {
             description: 'Location for the SPA index file',
             prepare: (cmd, _, argv) => {
                 // add hook to output index file
-                cmd.cmd.addNuxtHook('generate:done', async ({ options, nuxt }) => {
+                cmd.cmd.addNuxtHook('build:done', async ({ options, nuxt }) => {
                     const { html } = await nuxt.server.renderRoute('/', {
                         url: '/'
                     });
@@ -93,28 +86,37 @@ const config = {
             default: 'public',
             description: 'The folder where laravel serves assets from',
             prepare: (cmd, _, argv) => {
-                // add hook move built assets to public path
-                cmd.cmd.addNuxtHook('generate:done', ({ options }) => {
-                    const publicPath = path_1.default.resolve(options.rootDir, `${argv['public-path']}`);
-                    const destination = path_1.default.resolve(publicPath + options.build.publicPath);
-                    // create directory if it does not exist
-                    if (!fs_extra_1.default.existsSync(destination)) {
-                        fs_extra_1.default.mkdirpSync(destination);
-                    }
-                    // copy static assets to public root
-                    const staticDir = path_1.default.resolve(options.rootDir, options.srcDir, 'static');
-                    if (fs_extra_1.default.existsSync(staticDir)) {
-                        fs_extra_1.default.copySync(staticDir, publicPath);
-                    }
-                    // move compiled assets to public destination
-                    fs_extra_1.default.moveSync(path_1.default.resolve(path_1.default.resolve(options.rootDir, options.generate.dir) +
-                        options.build.publicPath), destination, {
-                        overwrite: true
+                if (argv['public-path']) {
+                    // add hook move built assets to public path
+                    cmd.cmd.addNuxtHook('build:done', ({ options }) => {
+                        // resolve public root for static assets
+                        const publicRoot = path_1.default.resolve(options.rootDir, `${argv['public-path']}`);
+                        // resolve public path for compiled assets
+                        let assetsPath = '';
+                        if (options.router && options.router.base) {
+                            assetsPath = options.router.base.replace(/^\/$/g, '') + '/';
+                        }
+                        assetsPath += options.build.publicPath.replace(/^\//, '');
+                        const publicPath = path_1.default.resolve(publicRoot, assetsPath.replace(/^\//, ''));
+                        // create directory if it does not exist
+                        if (!fs_extra_1.default.existsSync(publicPath)) {
+                            fs_extra_1.default.mkdirpSync(publicPath);
+                        }
+                        // copy static assets to public root
+                        const staticDir = path_1.default.resolve(options.rootDir, options.srcDir, options.dir.static);
+                        if (fs_extra_1.default.existsSync(staticDir)) {
+                            fs_extra_1.default.copySync(staticDir, publicRoot);
+                        }
+                        // move compiled assets to public path
+                        fs_extra_1.default.moveSync(path_1.default.resolve(options.rootDir, options.buildDir, 'dist', 'client'), publicPath, {
+                            overwrite: true
+                        });
                     });
-                });
+                }
             }
         } }),
     async run(cmd) {
+        cmd.argv.generate = false;
         const buildCmd = await cli_1.commands.default('build');
         await buildCmd.run(cmd);
         if (cmd.argv.delete && lodash_1.isArray(cmd.argv.delete)) {

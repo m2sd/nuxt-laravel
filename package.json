@@ -13,8 +13,9 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "build:dev": "npm run build -- --sourceMap",
-    "build:clean": "rimraf dist .nuxt public storage && npm run build",
+    "build:dev": "npm run build",
+    "build:clean": "npm run clean && npm run build",
+    "clean": "rimraf dist .nuxt public storage",
     "lint": "tslint -p .",
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "tslint-config-prettier-check ./tslint.json",

@@ -139,48 +139,7 @@ describe('nuxt laravel dev', () => {
     })
   })
 
-  describe('i18n compatibility', () => {
-    const getExtendRoutesFromI18nConfigCommand = async (
-      i18nConf: object = {}
-    ) => {
-      return (await commandSimulator({
-        modules: [['nuxt-i18n', i18nConf]]
-      }))!.router!.extendRoutes
-    }
-
-    afterEach(() => {
-      reset()
-    })
-
-    test('does not resolve without default locale', async () => {
-      const extendRoutes = await getExtendRoutesFromI18nConfigCommand()
-
-      try {
-        extendRoutesTest(extendRoutes, { name: 'index___test' })
-      } catch (error) {
-        expect(error).toBe('Unable to resolve index route')
-      }
-    })
-
-    test('resolves i18n routes if locale is configured', async () => {
-      const extendRoutes = await getExtendRoutesFromI18nConfigCommand({
-        defaultLocale: 'test'
-      })
-
-      extendRoutesTest(extendRoutes, { name: 'index___test' })
-    })
-
-    test('respects name separator setting', async () => {
-      const extendRoutes = await getExtendRoutesFromI18nConfigCommand({
-        defaultLocale: 'test',
-        routesNameSeparator: '#'
-      })
-
-      extendRoutesTest(extendRoutes, { name: 'index#test' })
-    })
-  })
-
-  describe.skip('test cli arguments', () => {
+  describe('test cli arguments', () => {
     afterEach(() => {
       expect(options).toBeDefined()
 
@@ -192,6 +151,50 @@ describe('nuxt laravel dev', () => {
       jest.clearAllMocks()
     })
 
+    describe('changes server host', () => {
+      beforeAll(() => {
+        defineExpected({
+          server: {
+            host: '__test_host__'
+          }
+        })
+      })
+
+      afterAll(() => {
+        defineExpected()
+      })
+
+      test('with option --hostname', async () => {
+        options = await commandSimulator(['--hostname', expected.server.host])
+      })
+
+      test('with flag -H', async () => {
+        options = await commandSimulator(['-H', expected.server.host])
+      })
+    })
+
+    describe('changes server port', () => {
+      beforeAll(() => {
+        defineExpected({
+          server: {
+            port: 1234
+          }
+        })
+      })
+
+      afterAll(() => {
+        defineExpected()
+      })
+
+      test('with option --port', async () => {
+        options = await commandSimulator(['--port', expected.server.port])
+      })
+
+      test('with flag -p', async () => {
+        options = await commandSimulator(['-p', expected.server.port])
+      })
+    })
+
     describe('changes render path', () => {
       beforeAll(() => {
         defineExpected({
@@ -200,6 +203,7 @@ describe('nuxt laravel dev', () => {
           }
         })
       })
+
       afterAll(() => {
         defineExpected()
       })
@@ -239,33 +243,6 @@ describe('nuxt laravel dev', () => {
       reset()
     })
 
-    test('does chain existing extendRoutes function', async () => {
-      const testRoute = {
-        component: '__extend_routes_test__',
-        name: 'extended',
-        path: '/__extend_routes_test__'
-      }
-      const testExtendRoutes: jest.Mock<
-        NuxtConfigurationRouter['extendRoutes']
-      > = jest.fn().mockImplementation(routes => {
-        routes.push(testRoute)
-      })
-
-      options = await commandSimulator([], {
-        router: {
-          extendRoutes: testExtendRoutes
-        }
-      })
-
-      expect(options).toBeDefined()
-      expect(options!.router).toBeDefined()
-
-      const resolvedRoutes = extendRoutesTest(options!.router!.extendRoutes)
-
-      expect(testExtendRoutes).toHaveBeenCalled()
-      expect(resolvedRoutes).toEqual(expect.arrayContaining([testRoute]))
-    })
-
     test('merges existing proxy rules correctly', async () => {
       const testRule = ['/__test_path__', { target: '__test_target__' }]
 
@@ -275,6 +252,72 @@ describe('nuxt laravel dev', () => {
 
       expect(options).toBeDefined()
       expect(options!.proxy).toEqual(expect.arrayContaining([testRule]))
+    })
+
+    describe('extendRoutes', () => {
+      test('does chain existing function', async () => {
+        const testRoute = {
+          component: '__extend_routes_test__',
+          name: 'extended',
+          path: '/__extend_routes_test__'
+        }
+        const testExtendRoutes: jest.Mock<
+          NuxtConfigurationRouter['extendRoutes']
+        > = jest.fn().mockImplementation(routes => {
+          routes.push(testRoute)
+        })
+
+        options = await commandSimulator([], {
+          router: {
+            extendRoutes: testExtendRoutes
+          }
+        })
+
+        expect(options).toBeDefined()
+        expect(options!.router).toBeDefined()
+
+        const resolvedRoutes = extendRoutesTest(options!.router!.extendRoutes)
+
+        expect(testExtendRoutes).toHaveBeenCalled()
+        expect(resolvedRoutes).toEqual(expect.arrayContaining([testRoute]))
+      })
+
+      describe('i18n compatibility', () => {
+        const getExtendRoutesFromI18nConfigCommand = async (
+          i18nConf: object = {}
+        ) => {
+          return (await commandSimulator({
+            modules: [['nuxt-i18n', i18nConf]]
+          }))!.router!.extendRoutes
+        }
+
+        test('does not resolve without default locale', async () => {
+          const extendRoutes = await getExtendRoutesFromI18nConfigCommand()
+
+          try {
+            extendRoutesTest(extendRoutes, { name: 'index___test' })
+          } catch (error) {
+            expect(error).toBe('Unable to resolve index route')
+          }
+        })
+
+        test('resolves i18n routes if locale is configured', async () => {
+          const extendRoutes = await getExtendRoutesFromI18nConfigCommand({
+            defaultLocale: 'test'
+          })
+
+          extendRoutesTest(extendRoutes, { name: 'index___test' })
+        })
+
+        test('respects name separator setting', async () => {
+          const extendRoutes = await getExtendRoutesFromI18nConfigCommand({
+            defaultLocale: 'test',
+            routesNameSeparator: '#'
+          })
+
+          extendRoutesTest(extendRoutes, { name: 'index#test' })
+        })
+      })
     })
 
     describe('does not override existing modules', () => {
