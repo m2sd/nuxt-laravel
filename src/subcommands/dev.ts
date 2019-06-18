@@ -137,8 +137,9 @@ const config: NuxtLaravelCommandConfig = {
     const options = await loadNuxtConfig(cmd.argv)
 
     // retrieve dev server URL
+    const basePrefix = (options.router && options.router.base) || '/'
     const nuxtUrl = new URL(
-      cmd.argv['render-path'] as string,
+      path.join(basePrefix, cmd.argv['render-path'] as string),
       `http://${options.server!.host}:${options.server!.port}`
     )
 

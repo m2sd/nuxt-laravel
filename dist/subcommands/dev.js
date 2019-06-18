@@ -101,7 +101,8 @@ const config = {
     async run(cmd) {
         const options = await cli_1.loadNuxtConfig(cmd.argv);
         // retrieve dev server URL
-        const nuxtUrl = new url_1.URL(cmd.argv['render-path'], `http://${options.server.host}:${options.server.port}`);
+        const basePrefix = (options.router && options.router.base) || '/';
+        const nuxtUrl = new url_1.URL(path_1.default.join(basePrefix, cmd.argv['render-path']), `http://${options.server.host}:${options.server.port}`);
         // resolve relative to working directory
         const laravelPath = path_1.default.resolve(process.cwd(), `${cmd.argv['laravel-path']}`);
         // try to start artisan serve from laravel path

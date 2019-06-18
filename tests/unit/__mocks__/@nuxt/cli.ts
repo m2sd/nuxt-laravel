@@ -6,7 +6,9 @@ const config = jest.requireActual('@nuxt/config')
 export const setup = cli.setup
 export const commands = cli.commands
 export const NuxtCommand = cli.NuxtCommand
-export const loadNuxtConfig = cli.loadNuxtConfig
+export const loadNuxtConfig = jest
+  .fn()
+  .mockImplementation(argv => cli.loadNuxtConfig(argv))
 
 export const helpSpy = jest.fn()
 export const versionSpy = jest.fn()
@@ -21,6 +23,7 @@ NuxtCommand.prototype.getBuilder = jest.fn().mockReturnValue({
 NuxtCommand.prototype.getGenerator = jest.fn().mockReturnValue({
   generate: generateSpy
 })
+
 export const configSpy = jest.spyOn(NuxtCommand.prototype, 'getNuxtConfig')
 
 export const hookSpy = jest.fn()

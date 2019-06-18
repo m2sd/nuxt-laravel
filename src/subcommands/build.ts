@@ -71,20 +71,29 @@ const config: NuxtLaravelCommandConfig = {
     },
     'file-path': {
       type: 'string',
-      default: process.env.NUXT_URL || 'storage/app/index.html',
+      default: process.env.NUXT_URL,
       description: 'Location for the SPA index file',
       prepare: (cmd, _, argv) => {
         // add hook to output index file
         cmd.cmd.addNuxtHook!('build:done', async ({ options, nuxt }) => {
+          // get html for single page app
           const { html } = await nuxt.server.renderRoute('/', {
             url: '/'
           })
 
+          let filePath = argv['file-path'] as string
+
+          // fallback to public path if file path option is not set
+          if (!filePath) {
+            filePath = path.join(
+              `${argv['public-path']}`,
+              options.router.base,
+              'index.html'
+            )
+          }
+
           // resolve the file path relative to configured rootDir
-          const destination = path.resolve(
-            options.rootDir,
-            `${argv['file-path']}`
-          )
+          const destination = path.resolve(options.rootDir, filePath)
 
           // create directory if it does not exist
           const dir = path.dirname(destination)
@@ -104,21 +113,11 @@ const config: NuxtLaravelCommandConfig = {
         if (argv['public-path']) {
           // add hook move built assets to public path
           cmd.cmd.addNuxtHook!('build:done', ({ options }) => {
-            // resolve public root for static assets
-            const publicRoot = path.resolve(
-              options.rootDir,
-              `${argv['public-path']}`
-            )
-
-            // resolve public path for compiled assets
-            let assetsPath = ''
-            if (options.router && options.router.base) {
-              assetsPath = options.router.base.replace(/^\/$/g, '') + '/'
-            }
-            assetsPath += options.build.publicPath.replace(/^\//, '')
-            const publicPath = path.resolve(
-              publicRoot,
-              assetsPath.replace(/^\//, '')
+            // resolve public path for assets
+            const publicPath = path.join(
+              path.resolve(options.rootDir, `${argv['public-path']}`),
+              options.router.base,
+              options.build.publicPath
             )
 
             // create directory if it does not exist
@@ -126,23 +125,21 @@ const config: NuxtLaravelCommandConfig = {
               fs.mkdirpSync(publicPath)
             }
 
-            // copy static assets to public root
+            // resolve static assets path
             const staticDir = path.resolve(
               options.rootDir,
               options.srcDir,
               options.dir.static
             )
+            // copy static assets to public path if folder exists
             if (fs.existsSync(staticDir)) {
-              fs.copySync(staticDir, publicRoot)
+              fs.copySync(staticDir, publicPath)
             }
 
-            // move compiled assets to public path
-            fs.moveSync(
+            // copy compiled assets to public path
+            fs.copySync(
               path.resolve(options.rootDir, options.buildDir, 'dist', 'client'),
-              publicPath,
-              {
-                overwrite: true
-              }
+              publicPath
             )
           })
         }

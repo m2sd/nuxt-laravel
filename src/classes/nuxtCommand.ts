@@ -40,9 +40,9 @@ export class NuxtLaravelCommand extends NuxtCommand {
     // get Nuxt from cli imports
     const { Nuxt } = await imports.core()
 
-    // disable auto init
-    options._ready = false
+    // initialize the nuxt instance
     const nuxt = new Nuxt(options)
+    await nuxt.ready()
 
     // apply nuxt hooks if they have been provided
     if (typeof this.cmd._nuxtHooks === 'object') {
@@ -54,9 +54,6 @@ export class NuxtLaravelCommand extends NuxtCommand {
         }
       }
     }
-
-    // initialize the nuxt instance
-    await nuxt.ready()
 
     return nuxt
   }

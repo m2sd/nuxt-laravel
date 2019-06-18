@@ -18,9 +18,9 @@ class NuxtLaravelCommand extends cli_1.NuxtCommand {
     async getNuxt(options) {
         // get Nuxt from cli imports
         const { Nuxt } = await cli_1.imports.core();
-        // disable auto init
-        options._ready = false;
+        // initialize the nuxt instance
         const nuxt = new Nuxt(options);
+        await nuxt.ready();
         // apply nuxt hooks if they have been provided
         if (typeof this.cmd._nuxtHooks === 'object') {
             for (const name in this.cmd._nuxtHooks) {
@@ -31,8 +31,6 @@ class NuxtLaravelCommand extends cli_1.NuxtCommand {
                 }
             }
         }
-        // initialize the nuxt instance
-        await nuxt.ready();
         return nuxt;
     }
     async getNuxtConfig(extraOptions = {}) {

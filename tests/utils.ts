@@ -23,6 +23,7 @@ export const createCommandSimulator = (cmdConfig: NuxtCommandConfig) => async (
     nuxtConfig = _argv
   }
 
+  cmdConfig._nuxtHooks = {}
   const cmd = NuxtLaravelCommand.from(cmdConfig, argv)
 
   if (nuxtConfig) {

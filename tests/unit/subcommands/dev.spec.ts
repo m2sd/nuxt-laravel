@@ -1,18 +1,17 @@
-import { defaultsDeep } from 'lodash'
+import execa from 'execa'
+import { defaultsDeep, merge } from 'lodash'
 import { URL } from 'url'
 
-import { buildSpy, listenSpy, nuxtSpy, readySpy } from '@nuxt/cli'
+import { buildSpy, listenSpy, loadNuxtConfig, nuxtSpy, readySpy } from '@nuxt/cli'
 import NuxtConfiguration from '@nuxt/config'
 import { NuxtConfigurationModule } from '@nuxt/config/types/module'
 import { NuxtConfigurationRouter } from '@nuxt/config/types/router'
 
-import execa from 'execa'
-
-jest.mock('execa')
-
 import NuxtCommand from '../../../src/classes/nuxtCommand'
 import dev from '../../../src/subcommands/dev'
 import { CommandSimulator, createCommandSimulator } from '../../utils'
+
+jest.mock('execa')
 
 const cwd = process.cwd()
 
@@ -243,10 +242,36 @@ describe('nuxt laravel dev', () => {
       reset()
     })
 
+    test('respects router.base setting', async () => {
+      defineExpected({
+        server: {
+          path: `/test/path/${NuxtCommand.CONFIG_KEY}`
+        }
+      })
+
+      const config = {
+        router: {
+          base: '/test/path/'
+        }
+      }
+      
+      ;(loadNuxtConfig as jest.Mock).mockImplementationOnce(async args => {
+        const nuxtConfig = await loadNuxtConfig(args)
+
+        merge(nuxtConfig, config)
+
+        return nuxtConfig
+      })
+
+      await commandSimulator(config)
+
+      laravelTest()
+    })
+
     test('merges existing proxy rules correctly', async () => {
       const testRule = ['/__test_path__', { target: '__test_target__' }]
 
-      options = await commandSimulator([], {
+      options = await commandSimulator({
         proxy: [testRule]
       })
 
@@ -267,7 +292,7 @@ describe('nuxt laravel dev', () => {
           routes.push(testRoute)
         })
 
-        options = await commandSimulator([], {
+        options = await commandSimulator({
           router: {
             extendRoutes: testExtendRoutes
           }
