@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.0.0"></a>
+# [3.0.0](https://github.com/m2sd/nuxt-laravel/compare/v2.2.0...v3.0.0) (2019-06-18)
+
+
+### Features
+
+* **command/dev:** implement support for router.base setting ([34e6fd5](https://github.com/m2sd/nuxt-laravel/commit/34e6fd5))
+
+
+### BREAKING CHANGES
+
+* **command/dev:** change file-path logic in command/build
+
+
+
 <a name="2.2.0"></a>
 # [2.2.0](https://github.com/m2sd/nuxt-laravel/compare/v2.1.3...v2.2.0) (2019-06-17)
 
