@@ -1,6 +1,6 @@
 {
   "name": "nuxt-laravel",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "description": "Nuxt cli extension for use with laravel as backend",
   "bin": "./bin/cli.js",
   "main": "./dist/cli.js",
