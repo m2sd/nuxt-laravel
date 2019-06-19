@@ -68,6 +68,9 @@ const config = {
                         path: argv['render-path']
                     }));
                 };
+                const renderRoot = (options.router && options.router.base) || '';
+                const proxyPath = path_1.default.join(renderRoot, '**/*');
+                const renderPath = path_1.default.join(renderRoot, `${argv['render-path']}`);
                 const overrides = {
                     // use @nuxtjs/proxy module
                     axios: {
@@ -76,7 +79,7 @@ const config = {
                     // proxy all calls except the render path to laravel
                     proxy: [
                         [
-                            ['**/*', `!${argv['render-path']}`],
+                            [proxyPath, `!${renderPath}`],
                             {
                                 target: `http://${options.server.host}:${+options.server
                                     .port + 1}`,
