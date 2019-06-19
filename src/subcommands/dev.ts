@@ -134,7 +134,7 @@ const config: NuxtLaravelCommandConfig = {
     }
   },
   async run(cmd) {
-    const options = await loadNuxtConfig(cmd.argv)
+    const options = await cmd.getNuxtConfig(cmd.argv)
 
     // retrieve dev server URL
     const basePrefix = (options.router && options.router.base) || '/'

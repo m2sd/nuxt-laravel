@@ -99,7 +99,7 @@ const config = {
             type: 'string'
         } }),
     async run(cmd) {
-        const options = await cli_1.loadNuxtConfig(cmd.argv);
+        const options = await cmd.getNuxtConfig(cmd.argv);
         // retrieve dev server URL
         const basePrefix = (options.router && options.router.base) || '/';
         const nuxtUrl = new url_1.URL(path_1.default.join(basePrefix, cmd.argv['render-path']), `http://${options.server.host}:${options.server.port}`);
