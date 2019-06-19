@@ -102,8 +102,6 @@ const config: NuxtLaravelCommandConfig = {
         }
 
         const renderRoot = (options.router && options.router.base) || ''
-        const proxyPath = path.join(renderRoot, '**/*')
-        const renderPath = path.join(renderRoot, `${argv['render-path']}`)
 
         const overrides: typeof options = {
           // use @nuxtjs/proxy module
@@ -113,7 +111,7 @@ const config: NuxtLaravelCommandConfig = {
           // proxy all calls except the render path to laravel
           proxy: [
             [
-              [proxyPath, `!${renderPath}`],
+              ['**/*', `!${path.join(renderRoot, `${argv['render-path']}`)}`],
               {
                 target: `http://${options.server!.host}:${+options.server!
                   .port! + 1}`,
