@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.0.1"></a>
+## [3.0.1](https://github.com/m2sd/nuxt-laravel/compare/v3.0.0...v3.0.1) (2019-06-19)
+
+
+### Bug Fixes
+
+* **command/dev:** load full nuxt config for laravel testserver settings ([4240d76](https://github.com/m2sd/nuxt-laravel/commit/4240d76))
+
+
+
 <a name="3.0.0"></a>
 # [3.0.0](https://github.com/m2sd/nuxt-laravel/compare/v2.2.0...v3.0.0) (2019-06-18)
 
