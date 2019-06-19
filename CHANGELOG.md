@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="3.0.3"></a>
+## [3.0.3](https://github.com/m2sd/nuxt-laravel/compare/v3.0.2...v3.0.3) (2019-06-19)
+
+
+### Bug Fixes
+
+* **command/dev:** only ignore render path ([ecd4535](https://github.com/m2sd/nuxt-laravel/commit/ecd4535))
+
+
+
 <a name="3.0.2"></a>
 ## [3.0.2](https://github.com/m2sd/nuxt-laravel/compare/v3.0.1...v3.0.2) (2019-06-19)
 
