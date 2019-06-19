@@ -1,4 +1,4 @@
-import NuxtCommand from '../../../src/classes/nuxtCommand'
+import NuxtCommand from '../../../src/classes/NuxtCommand'
 import { commands } from '../../../src/cli'
 
 describe('NuxtCommand class', () => {

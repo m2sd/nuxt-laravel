@@ -1,11 +1,11 @@
 import fs from 'fs-extra'
-import { isArray } from 'lodash'
+import { isArray, isObject } from 'lodash'
 import path from 'path'
 
 import { commands } from '@nuxt/cli'
 import { common, locking } from '@nuxt/cli/dist/cli-chunk3'
 
-import { NuxtLaravelCommandConfig } from '../classes/nuxtCommand'
+import { NuxtLaravelCommandConfig } from '../classes/NuxtCommand'
 
 delete common.spa
 delete common.universal
@@ -113,34 +113,36 @@ const config: NuxtLaravelCommandConfig = {
         if (argv['public-path']) {
           // add hook move built assets to public path
           cmd.cmd.addNuxtHook!('build:done', ({ options }) => {
-            // resolve public path for assets
-            const publicPath = path.join(
+            // resolve public root for static assets
+            const publicRoot = path.join(
               path.resolve(options.rootDir, `${argv['public-path']}`),
-              options.router.base,
-              options.build.publicPath
+              options.router.base
             )
 
-            // create directory if it does not exist
-            if (!fs.existsSync(publicPath)) {
-              fs.mkdirpSync(publicPath)
-            }
+            // resolve public path for compiled assets
+            const assetsRoot = path.join(publicRoot, options.build.publicPath)
 
             // resolve static assets path
-            const staticDir = path.resolve(
+            const staticAssets = path.resolve(
               options.rootDir,
               options.srcDir,
               options.dir.static
             )
-            // copy static assets to public path if folder exists
-            if (fs.existsSync(staticDir)) {
-              fs.copySync(staticDir, publicPath)
-            }
 
-            // copy compiled assets to public path
-            fs.copySync(
-              path.resolve(options.rootDir, options.buildDir, 'dist', 'client'),
-              publicPath
+            // resolve compiled assets path
+            const compiledAssets = path.resolve(
+              options.rootDir,
+              options.buildDir,
+              'dist',
+              'client'
             )
+
+            cmd.argv['public-path'] = {
+              publicRoot,
+              assetsRoot,
+              staticAssets,
+              compiledAssets
+            }
           })
         }
       }
@@ -152,6 +154,17 @@ const config: NuxtLaravelCommandConfig = {
     const buildCmd = await commands.default('build')
 
     await buildCmd!.run!(cmd)
+
+    if (cmd.argv['public-path'] && isObject(cmd.argv['public-path'])) {
+      const paths = cmd.argv['public-path']
+
+      if (!fs.existsSync(paths.assetsRoot)) {
+        fs.mkdirpSync(paths.assetsRoot)
+      }
+
+      fs.copySync(paths.staticAssets, paths.publicRoot)
+      fs.copySync(paths.compiledAssets, paths.assetsRoot)
+    }
 
     if (cmd.argv.delete && isArray(cmd.argv.delete)) {
       cmd.argv.delete.forEach(delPath => {

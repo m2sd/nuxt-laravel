@@ -95,20 +95,20 @@ const config = {
                 if (argv['public-path']) {
                     // add hook move built assets to public path
                     cmd.cmd.addNuxtHook('build:done', ({ options }) => {
-                        // resolve public path for assets
-                        const publicPath = path_1.default.join(path_1.default.resolve(options.rootDir, `${argv['public-path']}`), options.router.base, options.build.publicPath);
-                        // create directory if it does not exist
-                        if (!fs_extra_1.default.existsSync(publicPath)) {
-                            fs_extra_1.default.mkdirpSync(publicPath);
-                        }
+                        // resolve public root for static assets
+                        const publicRoot = path_1.default.join(path_1.default.resolve(options.rootDir, `${argv['public-path']}`), options.router.base);
+                        // resolve public path for compiled assets
+                        const assetsRoot = path_1.default.join(publicRoot, options.build.publicPath);
                         // resolve static assets path
-                        const staticDir = path_1.default.resolve(options.rootDir, options.srcDir, options.dir.static);
-                        // copy static assets to public path if folder exists
-                        if (fs_extra_1.default.existsSync(staticDir)) {
-                            fs_extra_1.default.copySync(staticDir, publicPath);
-                        }
-                        // copy compiled assets to public path
-                        fs_extra_1.default.copySync(path_1.default.resolve(options.rootDir, options.buildDir, 'dist', 'client'), publicPath);
+                        const staticAssets = path_1.default.resolve(options.rootDir, options.srcDir, options.dir.static);
+                        // resolve compiled assets path
+                        const compiledAssets = path_1.default.resolve(options.rootDir, options.buildDir, 'dist', 'client');
+                        cmd.argv['public-path'] = {
+                            publicRoot,
+                            assetsRoot,
+                            staticAssets,
+                            compiledAssets
+                        };
                     });
                 }
             }
@@ -117,6 +117,14 @@ const config = {
         cmd.argv.generate = false;
         const buildCmd = await cli_1.commands.default('build');
         await buildCmd.run(cmd);
+        if (cmd.argv['public-path'] && lodash_1.isObject(cmd.argv['public-path'])) {
+            const paths = cmd.argv['public-path'];
+            if (!fs_extra_1.default.existsSync(paths.assetsRoot)) {
+                fs_extra_1.default.mkdirpSync(paths.assetsRoot);
+            }
+            fs_extra_1.default.copySync(paths.staticAssets, paths.publicRoot);
+            fs_extra_1.default.copySync(paths.compiledAssets, paths.assetsRoot);
+        }
         if (cmd.argv.delete && lodash_1.isArray(cmd.argv.delete)) {
             cmd.argv.delete.forEach(delPath => {
                 fs_extra_1.default.removeSync(delPath);

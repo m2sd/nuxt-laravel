@@ -6,7 +6,7 @@
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
-| ![Statements](https://img.shields.io/badge/Coverage-91.3%25-brightgreen.svg) | ![Branches](https://img.shields.io/badge/Coverage-71.93%25-red.svg) | ![Functions](https://img.shields.io/badge/Coverage-86.67%25-yellow.svg) | ![Lines](https://img.shields.io/badge/Coverage-92.11%25-brightgreen.svg) |
+| ![Statements](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) | ![Branches](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) | ![Functions](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) | ![Lines](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) |
 
 This package allows to develop a nuxt SPA as frontend for a laravel backend.  
 The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/laravel-nuxt-js) by [skyrpex](https://github.com/skyrpex).

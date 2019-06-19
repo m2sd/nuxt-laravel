@@ -15,4 +15,4 @@ export declare class NuxtLaravelCommand extends NuxtCommand {
     getNuxtConfig(extraOptions?: NuxtConfiguration): Promise<NuxtConfiguration>;
 }
 export default NuxtLaravelCommand;
-//# sourceMappingURL=nuxtCommand.d.ts.map
+//# sourceMappingURL=NuxtCommand.d.ts.map

@@ -4,9 +4,12 @@
   "description": "Nuxt cli extension for use with laravel as backend",
   "bin": "./bin/cli.js",
   "main": "./dist/cli.js",
+  "types": "./types/cli.d.ts",
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "types",
+    "*-shim.d.ts"
   ],
   "engines": {
     "node": ">=8.10.0"
@@ -15,7 +18,7 @@
     "build": "tsc -p tsconfig.build.json",
     "build:dev": "npm run build",
     "build:clean": "npm run clean && npm run build",
-    "clean": "rimraf dist .nuxt public storage",
+    "clean": "rimraf dist .nuxt public storage types",
     "lint": "tslint -p .",
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "tslint-config-prettier-check ./tslint.json",

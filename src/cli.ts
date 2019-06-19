@@ -3,7 +3,7 @@ import { existsSync } from 'fs-extra'
 
 import { setup } from '@nuxt/cli'
 
-import NuxtCommand, { NuxtLaravelCommandConfig } from './classes/nuxtCommand'
+import NuxtCommand, { NuxtLaravelCommandConfig } from './classes/NuxtCommand'
 
 const _commands: {
   [command: string]: () => Promise<{

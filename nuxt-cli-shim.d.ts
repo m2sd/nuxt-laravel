@@ -28,7 +28,15 @@ declare module '@nuxt/cli' {
 
   export interface NuxtCommandArguments {
     _: string[]
-    [key: string]: string[] | boolean | string
+    [key: string]: string[] | boolean | string | object
+    'public-path':
+      | string
+      | {
+          publicRoot: string
+          assetsRoot: string
+          staticAssets: string
+          compiledAssets: string
+        }
   }
 
   export abstract class NuxtCommand {
@@ -75,10 +83,9 @@ declare module '@nuxt/cli' {
   }
 
   export const setup: (config: NuxtConfiguration) => void
-  export const loadNuxtConfig: (argv: {
-    _: string[]
-    [key: string]: string[] | string | boolean
-  }) => Promise<NuxtConfiguration>
+  export const loadNuxtConfig: (
+    argv: NuxtCommandArguments
+  ) => Promise<NuxtConfiguration>
 
   export const run: (_argv?: string[]) => Promise<undefined>
 }

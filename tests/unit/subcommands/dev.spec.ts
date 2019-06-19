@@ -13,9 +13,10 @@ import NuxtConfiguration from '@nuxt/config'
 import { NuxtConfigurationModule } from '@nuxt/config/types/module'
 import { NuxtConfigurationRouter } from '@nuxt/config/types/router'
 
-import NuxtCommand from '../../../src/classes/nuxtCommand'
+import NuxtCommand from '../../../src/classes/NuxtCommand'
 import dev from '../../../src/subcommands/dev'
 import { CommandSimulator, createCommandSimulator } from '../../utils'
+import { configSpy } from '../__mocks__/@nuxt/cli'
 
 jest.mock('execa')
 
@@ -29,6 +30,7 @@ describe('nuxt laravel dev', () => {
     defineExpected()
     options = undefined
     jest.clearAllMocks()
+    configSpy.mockReset()
   }
 
   beforeAll(async () => {
@@ -243,7 +245,7 @@ describe('nuxt laravel dev', () => {
     })
   })
 
-  describe.skip('test with simulated nuxt.config', () => {
+  describe('test with simulated nuxt.config', () => {
     afterEach(() => {
       reset()
     })
@@ -260,13 +262,6 @@ describe('nuxt laravel dev', () => {
           base: '/test/path/'
         }
       }
-      ;(loadNuxtConfig as jest.Mock).mockImplementationOnce(async args => {
-        const nuxtConfig = await loadNuxtConfig(args)
-
-        merge(nuxtConfig, config)
-
-        return nuxtConfig
-      })
 
       await commandSimulator(config)
 

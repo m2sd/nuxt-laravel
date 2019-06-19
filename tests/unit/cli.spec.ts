@@ -2,7 +2,7 @@ import fs from 'fs'
 
 import { helpSpy, NuxtCommandConfig, versionSpy } from '@nuxt/cli'
 
-import NuxtCommand from '../../src/classes/nuxtCommand'
+import NuxtCommand from '../../src/classes/NuxtCommand'
 
 import { commands, run } from '../../src/cli'
 import buildCmd from '../../src/subcommands/build'

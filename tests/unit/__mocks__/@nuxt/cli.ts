@@ -6,9 +6,7 @@ const config = jest.requireActual('@nuxt/config')
 export const setup = cli.setup
 export const commands = cli.commands
 export const NuxtCommand = cli.NuxtCommand
-export const loadNuxtConfig = jest
-  .fn()
-  .mockImplementation(argv => cli.loadNuxtConfig(argv))
+export const loadNuxtConfig = cli.loadNuxtConfig
 
 export const helpSpy = jest.fn()
 export const versionSpy = jest.fn()

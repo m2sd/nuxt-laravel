@@ -9,7 +9,7 @@ const path_1 = __importDefault(require("path"));
 const url_1 = require("url");
 const cli_1 = require("@nuxt/cli");
 const cli_chunk3_1 = require("@nuxt/cli/dist/cli-chunk3");
-const nuxtCommand_1 = require("../classes/nuxtCommand");
+const NuxtCommand_1 = require("../classes/NuxtCommand");
 delete cli_chunk3_1.common.spa;
 delete cli_chunk3_1.common.universal;
 const config = {
@@ -26,7 +26,7 @@ const config = {
             description: 'Path to laravel directory',
             type: 'string'
         }, 'render-path': {
-            default: `/${nuxtCommand_1.NuxtLaravelCommand.CONFIG_KEY}`,
+            default: `/${NuxtCommand_1.NuxtLaravelCommand.CONFIG_KEY}`,
             description: 'URL path used to render the SPA',
             prepare: (_, options, argv) => {
                 // save existing extend routes function
@@ -64,7 +64,7 @@ const config = {
                     // add a copy of the index route
                     // on the specified render path
                     routes.push(Object.assign({}, index, {
-                        name: nuxtCommand_1.NuxtLaravelCommand.CONFIG_KEY,
+                        name: NuxtCommand_1.NuxtLaravelCommand.CONFIG_KEY,
                         path: argv['render-path']
                     }));
                 };

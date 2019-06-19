@@ -1,14 +1,20 @@
 import { defaultsDeep } from 'lodash'
 import path from 'path'
 
-import { buildSpy, generateSpy, hookSpy, nuxtSpy, readySpy } from '@nuxt/cli'
-import NuxtConfiguration from '@nuxt/config'
-
 import fs from 'fs-extra'
-
 jest.mock('fs-extra')
 
-import NuxtCommand from '../../../src/classes/nuxtCommand'
+import {
+  buildSpy,
+  configSpy,
+  generateSpy,
+  hookSpy,
+  nuxtSpy,
+  readySpy
+} from '@nuxt/cli'
+import NuxtConfiguration from '@nuxt/config'
+
+import NuxtCommand from '../../../src/classes/NuxtCommand'
 import buildCmd from '../../../src/subcommands/build'
 import { CommandSimulator, createCommandSimulator } from '../../utils'
 
@@ -65,12 +71,7 @@ describe('nuxt laravel build', () => {
         filePathTest()
       })
 
-      test('assets are deployed correctly', () => {
-        staticDirTest()
-        publicPathTest()
-      })
-
-      describe('build files are removed', () => {
+      describe('command finalization', () => {
         let instance: NuxtCommand
         beforeAll(() => {
           expect(fromSpy.mock.results[0].type).toBe('return')
@@ -78,17 +79,39 @@ describe('nuxt laravel build', () => {
           instance = fromSpy.mock.results[0].value
         })
 
-        test('destinations are collected', () => {
-          expect(instance.argv.delete).toEqual(
-            expect.arrayContaining([...expected.resolved!.remove])
-          )
+        describe('information is collected', () => {
+          test('asset folders and destinations are collected', () => {
+            expect(instance.argv['public-path']).toEqual(
+              expect.objectContaining({
+                assetsRoot: expected.resolved!.assets.to,
+                compiledAssets: expected.resolved!.assets.from,
+                publicRoot: expected.resolved!.static.to,
+                staticAssets: expected.resolved!.static.from
+              })
+            )
+          })
+
+          test('delete targets are collected', () => {
+            expect(instance.argv.delete).toEqual(
+              expect.arrayContaining([...expected.resolved!.remove])
+            )
+          })
         })
 
-        test('destinations are removed on command run', async () => {
-          await buildCmd!.run!(instance)
+        describe('on command run', () => {
+          beforeAll(async () => {
+            await buildCmd!.run!(instance)
+          })
 
-          expected.resolved!.remove.forEach((rmPath, i) => {
-            expect(fs.removeSync).toHaveBeenNthCalledWith(i + 1, rmPath)
+          test('assets are deployed', () => {
+            staticDirTest()
+            publicPathTest()
+          })
+
+          test('delete targets are removed', () => {
+            expected.resolved!.remove.forEach((rmPath, i) => {
+              expect(fs.removeSync).toHaveBeenNthCalledWith(i + 1, rmPath)
+            })
           })
         })
       })
@@ -146,6 +169,7 @@ describe('nuxt laravel build', () => {
 
     describe('changes file path', () => {
       afterEach(async () => {
+        await buildCmd!.run!(fromSpy.mock.results[0].value)
         filePathTest()
         publicPathTest()
       })
@@ -180,6 +204,7 @@ describe('nuxt laravel build', () => {
 
     describe('changes public path', () => {
       afterEach(async () => {
+        await buildCmd!.run!(fromSpy.mock.results[0].value)
         filePathTest()
         staticDirTest()
         publicPathTest()
@@ -262,7 +287,8 @@ describe('nuxt laravel build', () => {
         envTeardown()
       })
 
-      test('deploys assets to router.base subdirectory in public folder', () => {
+      test('deploys assets to router.base subdirectory in public folder', async () => {
+        await buildCmd!.run!(fromSpy.mock.results[0].value)
         staticDirTest()
         publicPathTest()
       })
@@ -282,7 +308,10 @@ let expected: {
       to: string
     }
     remove: string[]
-    static: string
+    static: {
+      from: string
+      to: string
+    }
   }
 }
 
@@ -305,8 +334,8 @@ const filePathTest = () => {
 const staticDirTest = () => {
   expect(fs.copySync).toHaveBeenNthCalledWith(
     1,
-    expected.resolved!.static,
-    expected.resolved!.assets.to
+    expected.resolved!.static.from,
+    expected.resolved!.static.to
   )
 }
 
@@ -357,7 +386,10 @@ const envSetup = async (config?: NuxtConfiguration, exp?: Expected) => {
     })
   )
 
-  const publicRoot = path.resolve(options!.rootDir!, expected.publicPath)
+  const publicRoot = path.join(
+    path.resolve(options!.rootDir!, expected.publicPath),
+    '/'
+  )
   const assetsRoot = path.join(publicRoot, options!.build!.publicPath!)
 
   expected.resolved = {
@@ -374,11 +406,14 @@ const envSetup = async (config?: NuxtConfiguration, exp?: Expected) => {
       ? path.resolve(options!.rootDir!, expected.filePath)
       : path.join(publicRoot, 'index.html'),
     remove: [path.resolve(options!.rootDir!, options!.buildDir!)],
-    static: path.resolve(
-      options!.rootDir!,
-      options!.srcDir!,
-      options!.dir.static
-    )
+    static: {
+      from: path.resolve(
+        options!.rootDir!,
+        options!.srcDir!,
+        options!.dir.static
+      ),
+      to: publicRoot
+    }
   }
 
   await runHooks()
@@ -388,4 +423,5 @@ const envTeardown = () => {
   options = undefined
   jest.clearAllMocks()
   expected.resolved = undefined
+  configSpy.mockReset()
 }

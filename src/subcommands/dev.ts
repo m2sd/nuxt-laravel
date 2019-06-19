@@ -10,7 +10,7 @@ import { NuxtConfigurationRouter } from '@nuxt/config/types/router'
 import {
   NuxtLaravelCommand,
   NuxtLaravelCommandConfig
-} from '../classes/nuxtCommand'
+} from '../classes/NuxtCommand'
 
 delete common.spa
 delete common.universal

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const execa_1 = __importDefault(require("execa"));
 const fs_extra_1 = require("fs-extra");
 const cli_1 = require("@nuxt/cli");
-const nuxtCommand_1 = __importDefault(require("./classes/nuxtCommand"));
+const NuxtCommand_1 = __importDefault(require("./classes/NuxtCommand"));
 const _commands = {
     build: () => Promise.resolve(require('./subcommands/build')),
     dev: () => Promise.resolve(require('./subcommands/dev'))
@@ -31,7 +31,7 @@ exports.run = async (_argv) => {
     cli_1.setup({ dev: argv[0] === 'dev' });
     // Try internal command
     if (cmd) {
-        return nuxtCommand_1.default.run(cmd, argv.slice(1));
+        return NuxtCommand_1.default.run(cmd, argv.slice(1));
     }
     // Try external command
     try {
@@ -48,7 +48,7 @@ exports.run = async (_argv) => {
         throw String(`Failed to run command \`nuxt-laravel-${argv[0]}\`:\n${error}`);
     }
 };
-exports.NuxtLaravelCommand = nuxtCommand_1.default;
+exports.NuxtLaravelCommand = NuxtCommand_1.default;
 exports.commands = Object.freeze({
     default: getCommand
 });
