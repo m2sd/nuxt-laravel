@@ -1,6 +1,7 @@
 # Nuxt Laravel
 
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](https://commitizen.github.io/cz-cli/)
+[![npm](https://img.shields.io/npm/v/nuxt-laravel/latest.svg)](https://www.npmjs.com/package/nuxt-laravel)
 
 **Jest coverage:**
 
