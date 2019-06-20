@@ -11,7 +11,7 @@
 This package allows to develop a nuxt SPA as frontend for a laravel backend.  
 As the SPA will be compiled to HTML and JS you don't need a node server in production.  
 The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/laravel-nuxt-js) by [skyrpex](https://github.com/skyrpex).
-> **Hint:** Use his composer exension [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt) for dotenv support
+> **Hint:** Use his composer exension [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt) for an easy way to configure the render path.
 
 ## Installation
 
@@ -38,6 +38,8 @@ In you package json:
 ```
 
 ## Commands
+
+The `--universal` option (as well as the `-u` flag) is not supported as the application is automatically set to `spa` mode.
 
 ### Development
 
@@ -108,8 +110,8 @@ Route::get(
           abort(404);
       }
 
-      // Fetch and display the page from the render path on nuxt dev server
-      return file_get_contents(getenv('NUXT_URL') ?: storage_path('app/index.html'));
+      // Fetch and display the page from the render path on nuxt dev server or fallback to static file
+      return file_get_contents(getenv('NUXT_URL') ?: public_path('spa.html'));
     }
 )->where('uri', '.*');
 ```
@@ -144,7 +146,7 @@ return [
 ### Production
 
 ```bash
-laravel-nuxt build
+npx nuxt laravel build
 ```
 
 Compiles the application for production deployment.
@@ -175,4 +177,4 @@ If file path or public path are relative they are resolved relative to `rootDir`
 If not provided, the file path is first checked against `process.env.NUXT_URL`, so you can also set it using the environment variable.  
 The command loads `require('dotenv').config()` so you can provide `NUXT_URL` through an `.env` file.
 
-Or just use [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt).
+Use the environment variable in your `routes/web.php` or through [laravle-nuxt](https://github.com/skyrpex/laravel-nuxt)'s `config/nuxt.php` ([see examples above](#Laravel-integration-in-development)) to perserve dev functionality.
