@@ -75,7 +75,10 @@ const config = {
                     let filePath = argv['file-path'];
                     // fallback to public path if file path option is not set
                     if (!filePath) {
-                        filePath = path_1.default.join(`${argv['public-path']}`, options.router.base, 'index.html');
+                        const name = options.router.base && options.router.base.length > 1
+                            ? 'index'
+                            : 'spa';
+                        filePath = path_1.default.join(`${argv['public-path']}`, options.router.base, `${name}.html`);
                     }
                     // resolve the file path relative to configured rootDir
                     const destination = path_1.default.resolve(options.rootDir, filePath);

@@ -392,6 +392,18 @@ const envSetup = async (config?: NuxtConfiguration, exp?: Expected) => {
   )
   const assetsRoot = path.join(publicRoot, options!.build!.publicPath!)
 
+  const filePath = expected.filePath
+    ? path.resolve(options!.rootDir!, expected.filePath)
+    : path.join(
+        publicRoot,
+        options!.router!.base!,
+        `${
+          options!.router!.base! && options!.router!.base!.length > 1
+            ? 'index'
+            : 'spa'
+        }.html`
+      )
+
   expected.resolved = {
     assets: {
       from: path.resolve(
@@ -402,9 +414,7 @@ const envSetup = async (config?: NuxtConfiguration, exp?: Expected) => {
       ),
       to: assetsRoot
     },
-    filePath: expected.filePath
-      ? path.resolve(options!.rootDir!, expected.filePath)
-      : path.join(publicRoot, 'index.html'),
+    filePath,
     remove: [path.resolve(options!.rootDir!, options!.buildDir!)],
     static: {
       from: path.resolve(

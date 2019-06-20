@@ -85,10 +85,15 @@ const config: NuxtLaravelCommandConfig = {
 
           // fallback to public path if file path option is not set
           if (!filePath) {
+            const name =
+              options.router.base && options.router.base.length > 1
+                ? 'index'
+                : 'spa'
+
             filePath = path.join(
               `${argv['public-path']}`,
               options.router.base,
-              'index.html'
+              `${name}.html`
             )
           }
 

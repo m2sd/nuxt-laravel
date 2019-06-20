@@ -2,13 +2,14 @@
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-**Jest coverage**
+**Jest coverage:**
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
 | ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
 
 This package allows to develop a nuxt SPA as frontend for a laravel backend.  
+As the SPA will be compiled to HTML and JS you don't need a node server in production.  
 The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/laravel-nuxt-js) by [skyrpex](https://github.com/skyrpex).
 > **Hint:** Use his composer exension [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt) for dotenv support
 
@@ -136,7 +137,7 @@ return [
      * In development, the SPA page will be on an external server. This
      * page will be passed as an environment variable (NUXT_URL).
      */
-    'page' => getenv('NUXT_URL') ?: storage_path('app/index.html')
+    'page' => getenv('NUXT_URL') ?: public_path('spa.html')
 ];
 ```
 
@@ -155,12 +156,19 @@ In addition to the default `nuxt build` command, the following options are provi
 | option          | description                                 | default                       |
 | --------------- | ------------------------------------------- | ----------------------------- |
 | `--no-delete`   | Do not delete build files after generation  | *boolean option has no value* |
-| `--file-path`   | Location for the SPA index file             | `'storage/app/index.html'`    |
+| `--file-path`   | Location for the SPA index file             | *auto (see below)*            |
 | `--public-path` | The folder where laravel serves assets from | `'public'`                    |
 
 If file path or public path are relative they are resolved relative to `rootDir` from `nuxt.config`.
 
 > **!!! Attention !!!:** If either path does not exists it is created recursively
+
+---
+> **Automatic file path resolution**  
+> File path will be resolved with respect to `--public-path` and the `router.base` setting from `nuxt.config`.  
+> If router base is root (`/`) the filename will be `spa.html`, if it is a subdirectory the filename will be `index.html`.  
+> i.e.: `[public-path]/[router.base]/[router.base ? 'index' : 'spa'].html`  
+> default: `'public/spa.html'`
 
 #### Laravel integration in production
 
