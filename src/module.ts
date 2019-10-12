@@ -124,7 +124,7 @@ const laravelModule: NuxtConfigurationModuleFunction = function(
     this.options.axios = this.options.axios || {}
     this.options.axios.proxy = true
     this.options.proxy = [
-      ...this.options.proxy,
+      ...(this.options.proxy || {}),
       [
         ['**/*', `!${path.join(renderRoot, moduleKey)}`],
         {
