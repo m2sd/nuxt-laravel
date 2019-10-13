@@ -256,7 +256,7 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
       : [outputDir === publicDir ? 'spa.html' : 'index.html', outputDir]
 
     // update nuxt router base if necessary
-    const outputUrl = outputDir.replace(publicDir, '')
+    const outputUrl = destDir.replace(publicDir, '')
     if (
       outputUrl &&
       (!this.options.router || this.options.router.base !== outputUrl)
@@ -291,14 +291,14 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
       ) {
         const envPath = path.join(laravelRoot, '.env')
         const envInput = fs.readFileSync(envPath).toString()
-        const envOutput = `${EOL}# Added by 'nuxt-laravel' module${EOL}${nuxtOutputEnv}=${path.join(
-          destDir,
-          fileName
-        )}`
+        const envOutputPrefix = `${EOL}# Added by 'nuxt-laravel' module${EOL}${nuxtOutputEnv}`
+        const envOutput = `${envOutputPrefix}=${path.join(destDir, fileName)}`
 
         fs.writeFileSync(
           envPath,
-          envInput.includes(nuxtOutputEnv)
+          envInput.includes(envOutputPrefix)
+            ? envInput.replace(new RegExp(`${envOutputPrefix}.*`), envOutput)
+            : envInput.includes(nuxtOutputEnv)
             ? envInput.replace(new RegExp(`${nuxtOutputEnv}.*`), envOutput)
             : envInput.concat(envOutput)
         )
