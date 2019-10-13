@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.6](https://github.com/m2sd/nuxt-laravel/compare/v4.1.5...v4.1.6) (2019-10-13)
+
+
+### Bug Fixes
+
+* **build:** ensure laravel public directory is not overwritten ([86e32e4](https://github.com/m2sd/nuxt-laravel/commit/86e32e44b224ebcf1fbe6b847267099c1fed5aa3))
+
 ### [4.1.5](https://github.com/m2sd/nuxt-laravel/compare/v4.1.4...v4.1.5) (2019-10-13)
 
 
