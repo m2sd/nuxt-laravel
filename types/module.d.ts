@@ -12,4 +12,4 @@ export interface Options {
 declare const laravelModule: Module<Options>;
 export default laravelModule;
 export declare const meta: any;
-//# sourceMappingURL=../src/maps/module.d.ts.map
+//# sourceMappingURL=module.d.ts.map

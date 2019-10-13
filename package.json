@@ -98,7 +98,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run validate && npm run build:clean && git add lib 'README.md'",
+      "pre-commit": "npm run validate && npm run build:clean && git add lib types 'README.md'",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   }
