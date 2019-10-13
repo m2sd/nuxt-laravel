@@ -1,6 +1,25 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [4.0.0](https://github.com/m2sd/nuxt-laravel/compare/v3.1.3...v4.0.0) (2019-10-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* **global:** cli tool no longer available, configuration via nuxt.config
+
+### Features
+
+* **global:** finalize module implementation and documentation ([52a64a4](https://github.com/m2sd/nuxt-laravel/commit/52a64a4a5c4e35d34f1f0672468f06672cbdc972))
+
+
+### Bug Fixes
+
+* **config:** fall back to empty object if proxy is not set ([e05350b](https://github.com/m2sd/nuxt-laravel/commit/e05350ba69713d2a9c20aa2c32371598bd02c033))
+
+
+* **global:** migrate functionality into nuxt module ([39ea96c](https://github.com/m2sd/nuxt-laravel/commit/39ea96cf71dbfcab72e8fe4a50e443fa96d2ba24))
 
 <a name="3.1.3"></a>
 ## [3.1.3](https://github.com/m2sd/nuxt-laravel/compare/v3.1.2...v3.1.3) (2019-06-20)
