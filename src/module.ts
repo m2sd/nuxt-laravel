@@ -279,7 +279,7 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
 
       // ensure the destination folder exists and overwrite it with the contents from the generation folder
       fs.ensureDirSync(destDir)
-      fs.moveSync(generateDir, destDir, { overwrite: true })
+      fs.moveSync(generateDir, destDir, { overwrite: destDir !== publicDir })
 
       logger.success(`SPA created in: ${destDir}`)
 
