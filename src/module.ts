@@ -148,7 +148,7 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
     this.options.proxy = [
       ...(this.options.proxy || []),
       [
-        ['**/*', `!${path.join(baseUrl, moduleKey)}`],
+        ['**/*', `!/${path.join(baseUrl, moduleKey)}`],
         {
           target: laravelUrl.origin,
           ws: false
@@ -203,6 +203,7 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
         )
 
         // try to start artisan serve from laravel path
+        console.log(nuxtUrl.href)
         try {
           execa(
             'php',
@@ -256,11 +257,8 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
       : [outputDir === publicDir ? 'spa.html' : 'index.html', outputDir]
 
     // update nuxt router base if necessary
-    const outputUrl = destDir.replace(publicDir, '')
-    if (
-      outputUrl &&
-      (!this.options.router || this.options.router.base !== outputUrl)
-    ) {
+    const outputUrl = `${destDir.replace(publicDir, '')}/`
+    if (!this.options.router || this.options.router.base !== outputUrl) {
       this.options.router = {
         ...(this.options.router || {}),
         base: outputUrl
