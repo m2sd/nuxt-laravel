@@ -1,14 +1,15 @@
-import { NuxtConfigurationModuleFunction } from '@nuxt/config/types/module';
-export interface LaravelModuleOptions {
+import { Module } from '@nuxt/types';
+export interface Options {
     root?: string;
     publicPath?: string;
-    renderPath?: string;
+    outputPath?: string;
     server?: {
-        host: string;
+        host?: string;
         port?: number;
-        https?: boolean;
     };
+    dotEnvExport?: boolean;
 }
-declare const laravelModule: NuxtConfigurationModuleFunction;
+declare const laravelModule: Module<Options>;
 export default laravelModule;
 export declare const meta: any;
+//# sourceMappingURL=../src/maps/module.d.ts.map

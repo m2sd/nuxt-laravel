@@ -1,64 +1,79 @@
-import { Route } from 'vue-router'
-import NuxtConfiguration from '@nuxt/config'
-import { NuxtConfigurationRouter } from '@nuxt/config/types/router'
-import { NuxtConfigurationModuleFunction } from '@nuxt/config/types/module'
+import { Module, Configuration } from '@nuxt/types'
+import { NuxtRouteConfig } from '@nuxt/types/config/router'
 
-import fs from 'fs'
-import { mkdirp } from 'fs-extra'
+import fs from 'fs-extra'
 import path from 'path'
 import execa from 'execa'
 import consola from 'consola'
+import chalk from 'chalk'
+import dotenv from 'dotenv'
 import { merge } from 'lodash'
 import { URL } from 'url'
+import { EOL } from 'os'
 
-interface Nuxt {
-  options: NuxtConfiguration
-  hook: (name: string, callback: (...args: any) => void) => void
-}
-
-interface ModuleContainer {
-  options: NuxtConfiguration
-  nuxt: Nuxt
-  extendRoutes: (callback: NuxtConfigurationRouter['extendRoutes']) => void
-  requireModule: (module: string | [string, { [key: string]: any }]) => void
-}
-
-export interface LaravelModuleOptions {
+export interface Options {
   root?: string
   publicPath?: string
-  renderPath?: string
-  server?: { host: string; port?: number; https?: boolean }
+  outputPath?: string
+  server?: {
+    host?: string
+    port?: number
+  }
+  dotEnvExport?: boolean
 }
 
 const moduleScope = 'nuxt:laravel'
 const logger = consola.withScope(moduleScope)
 const moduleKey = `__${moduleScope.replace(':', '_')}`
+const laravelAppEnv = 'APP_URL'
+const nuxtOutputEnv = 'NUXT_OUTPUT_PATH'
 
-const laravelModule: NuxtConfigurationModuleFunction = function(
-  this: ModuleContainer,
-  moduleOptions
-) {
+const laravelModule: Module<Options> = function(_moduleOptions) {
+  /** CONFIGURATION **/
   // resolve module options
-  const options: Required<LaravelModuleOptions> = merge(
+  const baseUrl = (
+    (this.options.router && this.options.router.base) ||
+    ''
+  ).replace(/^\//, '')
+  const moduleOptions: Required<Options> = merge(
     {
       root: process.cwd(),
       publicPath: 'public',
-      renderPath: process.env.NUXT_URL,
+      outputPath: baseUrl,
       server:
         this.options.dev && this.options.server
           ? {
               host: this.options.server.host,
               port: +(this.options.server.port || 3000) + 1
             }
-          : false
+          : false,
+      dotEnvExport: false
     },
     this.options.laravel,
-    moduleOptions
+    _moduleOptions
   )
-  const laravelPath = path.resolve(process.cwd(), options.root)
+  const laravelRoot = path.resolve(process.cwd(), moduleOptions.root)
+  const generateDir = path.join(laravelRoot, moduleKey)
+  const publicDir = path.resolve(laravelRoot, moduleOptions.publicPath)
+
+  dotenv.config({ path: laravelRoot })
+  moduleOptions.outputPath =
+    process.env.NUXT_OUTPUT_PATH || moduleOptions.outputPath
+
+  const outputDir = path.resolve(publicDir, moduleOptions.outputPath)
+
+  /** IMPLEMENTATION **/
 
   // local helpers
-  const findIndexRoute = (routes: Route[]) => {
+  const enableLaravelSupport = (enabled: boolean = true) => {
+    const status = enabled
+      ? chalk.green.bold('enabled')
+      : chalk.red.bold('disabled')
+
+    this.options.cli!.badgeMessages.push(`Laravel support is ${status}`)
+  }
+
+  const findIndexRoute = (routes: NuxtRouteConfig[]) => {
     let index = routes.find(
       // First, check if there is an unnamed route
       // Then, check if there's a route at /
@@ -100,22 +115,29 @@ const laravelModule: NuxtConfigurationModuleFunction = function(
     return index
   }
 
-  // start laravel server if defined in options
-  if (options.server) {
+  // Fail with a warning if we are not in 'spa' mode
+  if (this.options.mode !== 'spa') {
+    logger.warn(`nuxt-laravel only supports 'spa' mode`)
+
+    enableLaravelSupport(false)
+
+    return
+  }
+
+  // DEV behavior
+  if (moduleOptions.server && this.options.dev) {
     // resolve pertinent config parameters
-    const renderRoot = (this.options.router && this.options.router.base) || ''
     const laravelUrl = new URL(
-      `http${options.server.https ? 's' : ''}://${options.server.host}:${
-        options.server.port
-      }`
+      `http://${moduleOptions.server.host}:${moduleOptions.server.port}`
     )
 
-    // fail if laravelPath is invalid
-    if (!fs.existsSync(path.join(laravelPath, 'artisan'))) {
+    // fail if laravelRoot is invalid
+    if (!fs.existsSync(path.join(laravelRoot, 'artisan'))) {
       logger.error(
-        'Unable to find artisan executable in laravel path:',
-        laravelPath
+        `Unable to find 'artisan' executable in laravel path ${laravelRoot}`
       )
+
+      enableLaravelSupport(false)
 
       return
     }
@@ -124,9 +146,9 @@ const laravelModule: NuxtConfigurationModuleFunction = function(
     this.options.axios = this.options.axios || {}
     this.options.axios.proxy = true
     this.options.proxy = [
-      ...(this.options.proxy || {}),
+      ...(this.options.proxy || []),
       [
-        ['**/*', `!${path.join(renderRoot, moduleKey)}`],
+        ['**/*', `!${path.join(baseUrl, moduleKey)}`],
         {
           target: laravelUrl.origin,
           ws: false
@@ -139,17 +161,17 @@ const laravelModule: NuxtConfigurationModuleFunction = function(
     this.requireModule('@nuxtjs/proxy')
 
     // extend routes to intercept proxied calls
-    this.extendRoutes(routes => {
+    this.extendRoutes((routes: NuxtRouteConfig[]) => {
       let index = findIndexRoute(routes)
 
       // fail if index route can not be resolved
       if (!index) {
         logger.error('Unable to resolve index route')
 
+        enableLaravelSupport(false)
+
         return
       }
-
-      logger.debug('Index route resolved on path:', index.path)
 
       // add a copy of the index route
       // on the specified render path
@@ -161,17 +183,23 @@ const laravelModule: NuxtConfigurationModuleFunction = function(
       )
     })
 
-    this.nuxt.hook('render:before', async nuxt => {
-      if (nuxt.options.server) {
-        // retrieve dev server URL
-        const basePrefix =
-          (nuxt.options.router && nuxt.options.router.base) || '/'
+    this.nuxt.hook(
+      'render:before',
+      async ({ options }: { options: Configuration }) => {
+        if (!options.server) {
+          logger.warn('Dev server is not enabled')
 
+          enableLaravelSupport(false)
+
+          return
+        }
+
+        // retrieve dev server URL
         const nuxtUrl = new URL(
-          path.join(basePrefix, moduleKey),
-          `http${nuxt.options.server.https ? 's' : ''}://${
-            nuxt.options.server.host
-          }:${nuxt.options.server.port || 3000}`
+          path.join(baseUrl, moduleKey),
+          `http${!!options.server.https ? 's' : ''}://${
+            options.server.host
+          }:${options.server.port || 3000}`
         )
 
         // try to start artisan serve from laravel path
@@ -189,11 +217,11 @@ const laravelModule: NuxtConfigurationModuleFunction = function(
               `--port=${laravelUrl.port}`
             ],
             {
-              cwd: laravelPath,
+              cwd: laravelRoot,
               // forward render path and baseUrl as env variables
               env: Object.assign({}, process.env, {
-                APP_URL: nuxtUrl.origin,
-                NUXT_URL: nuxtUrl.href
+                [laravelAppEnv]: nuxtUrl.origin,
+                [nuxtOutputEnv]: nuxtUrl.href
               }),
               stderr: process.stderr,
               stdin: process.stdin,
@@ -201,68 +229,68 @@ const laravelModule: NuxtConfigurationModuleFunction = function(
             }
           )
         } catch (error) {
-          logger.error('Failed to run command `php artisan serve`:', error)
+          logger.error(`Failed to start Laravel server`)
+
+          enableLaravelSupport(false)
+
+          return
         }
+
+        enableLaravelSupport()
       }
-    })
+    )
   }
 
-  // generate spa html if configured accordingly
-  if (!this.options.dev && this.options.mode === 'spa' && options.publicPath) {
-    const publicDir = path.dirname(
-      path.resolve(laravelPath, options.publicPath)
-    )
-
+  // PROD behaviour
+  if (!this.options.dev && moduleOptions.publicPath) {
+    // fail if public dir cannot be found
     if (!fs.existsSync(publicDir)) {
       logger.error('Unable to find laravel public dir:', publicDir)
 
       return
     }
 
-    let filePath = options.renderPath
-    this.nuxt.hook('build:done', async ({ server, router, options }) => {
-      const index = findIndexRoute(router.options.routes)
+    // resolve fileName and destDir setting
+    const [fileName, destDir]: [string, string] = outputDir.endsWith('.html')
+      ? [path.basename(outputDir), path.dirname(outputDir)]
+      : [outputDir === publicDir ? 'spa.html' : 'index.html', outputDir]
 
-      // fail if index route can not be resolved
-      if (!index) {
-        logger.error('Unable to resolve index route')
+    // exclude all routes from generation as we control nuxt from a single index file
+    this.options.generate = {
+      ...(this.options.generate || {}),
+      dir: generateDir,
+      exclude: [/.*/],
+      fallback: fileName
+    }
+    logger.info('Generation configured for Laravel SPA.')
 
-        return
+    this.nuxt.hook('generate:done', () => {
+      logger.info('Generating SPA for laravel...')
+
+      // ensure the destination folder exists and overwrite it with the contents from the generation folder
+      fs.ensureDirSync(destDir)
+      fs.moveSync(generateDir, destDir, { overwrite: true })
+
+      logger.success(`SPA created in: ${destDir}`)
+
+      if (
+        moduleOptions.dotEnvExport &&
+        fs.existsSync(path.join(laravelRoot, '.env'))
+      ) {
+        const envPath = path.join(laravelRoot, '.env')
+        const envInput = fs.readFileSync(envPath).toString()
+        const envOutput = `${EOL}# Added by 'nuxt-laravel' module${EOL}${nuxtOutputEnv}=${path.join(
+          destDir,
+          fileName
+        )}`
+
+        fs.writeFileSync(
+          envPath,
+          envInput.includes(nuxtOutputEnv)
+            ? envInput.replace(new RegExp(`${nuxtOutputEnv}.*`), envOutput)
+            : envInput.concat(envOutput)
+        )
       }
-
-      // render index route
-      const { html, error } = await server.renderRoute(index.path)
-
-      if (error) {
-        logger.error('Error while rendering index route:', error)
-
-        return
-      }
-
-      // fall back to autogenerated file path if it was not set manually
-      if (!filePath) {
-        if (
-          options.router &&
-          options.router.base &&
-          options.router.base !== '/'
-        ) {
-          filePath = path.join(options.router.base, 'index.html')
-        } else {
-          filePath = 'spa.html'
-        }
-      }
-
-      // resolve the destination inside laravels public folder
-      const dest = path.join(publicDir, filePath)
-
-      // create directory if it does not exist
-      const destDir = path.dirname(dest)
-      if (!fs.existsSync(destDir)) {
-        mkdirp(destDir)
-      }
-
-      // write generated file to destination
-      fs.writeFileSync(dest, html, 'utf-8')
     })
   }
 }
