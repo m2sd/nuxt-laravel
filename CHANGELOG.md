@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.2](https://github.com/m2sd/nuxt-laravel/compare/v4.1.1...v4.1.2) (2019-10-13)
+
+
+### Bug Fixes
+
+* **build:** use correct resolution for router base ([a1703f6](https://github.com/m2sd/nuxt-laravel/commit/a1703f68423f3130ae2bd22486d41fdf4a14dc52))
+
 ### [4.1.1](https://github.com/m2sd/nuxt-laravel/compare/v4.1.0...v4.1.1) (2019-10-13)
 
 ## [4.1.0](https://github.com/m2sd/nuxt-laravel/compare/v4.0.1...v4.1.0) (2019-10-13)
