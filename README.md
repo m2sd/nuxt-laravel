@@ -70,6 +70,13 @@ export default {
 
 The module loads the `.env` file from yout laravel root, so you can set the `NUXT_OUTPUT_PATH` environment variable from there.
 
+#### `server` setting
+
+| option | type     | description                 | default                      |
+| ------ | -------- | --------------------------- | ---------------------------- |
+| `host` | `string` | Hostname for the testserver | `nuxtConfig.server.host`     |
+| `port` | `number` | Port for the testserver     | `nuxtConfig.server.port + 1` |
+
 ---
 > **File and Folder resolution**:  
 > `root` is resolved relative to `process.cwd()`, in other words: where you execute your `npx nuxt` command from.  
@@ -88,14 +95,7 @@ The module loads the `.env` file from yout laravel root, so you can set the `NUX
 >   `fileName = index.html`  
 >   `destDir = outputPath`
 
-#### `server` setting
-
-| option | type     | description                 | default                      |
-| ------ | -------- | --------------------------- | ---------------------------- |
-| `host` | `string` | Hostname for the testserver | `nuxtConfig.server.host`     |
-| `port` | `number` | Port for the testserver     | `nuxtConfig.server.port + 1` |
-
-### Laravel integration
+## Laravel integration
 
 Laravel integration is accomplished through two environment variables.
 
@@ -109,7 +109,7 @@ Laravel integration is accomplished through two environment variables.
 
 > **!!! Attention !!!:** You have to use PHPs native `getenv()` function, instead of Laravels `env()` helper to retrieve these varaibles, because the Laravel helper ignores putenv vars.
 
-#### Example Laravel configuration
+### Example Laravel configuration
 
 `config/app.php`:
 
