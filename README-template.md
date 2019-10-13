@@ -1,13 +1,15 @@
 # Nuxt Laravel
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](https://commitizen.github.io/cz-cli/)
-[![npm](https://img.shields.io/npm/v/nuxt-laravel/next.svg)](https://www.npmjs.com/package/nuxt-laravel)
+[![npm](https://img.shields.io/npm/v/nuxt-laravel/next.svg)](https://www.npmjs.com/package/nuxt-laravel/v/next)
 
 **Jest coverage:**
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
 | ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
+
+Looking for the old CLI extension? [nuxt-laravel](https://github.com/m2sd/nuxt-laravel/tree/legacy).
 
 This module makes it easy to integrate a [NuxtJS](https://nuxtjs.org) SPA into a [Laravel](https://laravel.com) application.  
 The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/laravel-nuxt-js) by [skyrpex](https://github.com/skyrpex).
@@ -26,7 +28,7 @@ The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/lara
 Install this package and its peer dependencies.
 
 ```bash
-npm install --save-dev @nuxtjs/axios @nuxtjs/proxy nuxt-laravel
+npm install --save-dev @nuxtjs/axios @nuxtjs/proxy nuxt-laravel@next
 ```
 
 ### Configuration
