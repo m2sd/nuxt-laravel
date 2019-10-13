@@ -255,6 +255,18 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
       ? [path.basename(outputDir), path.dirname(outputDir)]
       : [outputDir === publicDir ? 'spa.html' : 'index.html', outputDir]
 
+    // update nuxt router base if necessary
+    const outputUrl = outputDir.replace(publicDir, '')
+    if (
+      outputUrl &&
+      (!this.options.router || this.options.router.base !== outputUrl)
+    ) {
+      this.options.router = {
+        ...(this.options.router || {}),
+        base: outputUrl
+      }
+    }
+
     // exclude all routes from generation as we control nuxt from a single index file
     this.options.generate = {
       ...(this.options.generate || {}),

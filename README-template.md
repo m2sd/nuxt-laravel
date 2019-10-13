@@ -101,11 +101,12 @@ Laravel integration is accomplished through two environment variables.
 
 * **`APP_URL`:**  
   Laravel uses this to generate asset URLs.  
-  When the Laravel test server is started through this module this variable is overwritten with the nuxt test server URL via putenv.
+  * When the Laravel test server is started through this module this variable is overwritten with the nuxt test server URL via putenv.
+
 * **`NUXT_OUTPUT_PATH`:**  
   Use this variable to redirect all web traffic to, which you want handled by nuxt.  
-  When the Laravel test server is started through this module this variable is overwritten with the nuxt test server HMR endpoint via putenv.  
-  Wehn nuxt is build through this module (and `exportDotEnv = true`) this variable will be written to the `.env` file in laravels root directory, containing the resolved `filePath` (`path.join(destDir, fileName)`, see above).
+  * When the Laravel test server is started through this module this variable is overwritten with the nuxt test server HMR endpoint via putenv.  
+  * When nuxt is build through this module (and `dotEnvExport` is truthy) this variable will be written to the `.env` file in laravels root directory, containing the resolved `filePath` (`path.join(destDir, fileName)`, see above).
 
 > **!!! Attention !!!:** You have to use PHPs native `getenv()` function, instead of Laravels `env()` helper to retrieve these varaibles, because the Laravel helper ignores putenv vars.
 
