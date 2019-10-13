@@ -80,7 +80,7 @@
     "execa": "^2.1.0",
     "fs-extra": "^8.1.0",
     "lodash": "^4.17.15",
-    "nuxt": "^2.10.1"
+    "nuxt": "^2.4.5"
   },
   "peerDependencies": {
     "@nuxtjs/axios": "^5.4.1",
