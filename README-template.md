@@ -9,6 +9,8 @@
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
 | ![Statements](#statements#) | ![Branches](#branches#) | ![Functions](#functions#) | ![Lines](#lines#) |
 
+Looking for the new module implementation? [nuxt-laravel@next](https://github.com/m2sd/nuxt-laravel)
+
 This package allows to develop a nuxt SPA as frontend for a laravel backend.  
 As the SPA will be compiled to HTML and JS you don't need a node server in production.  
 The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/laravel-nuxt-js) by [skyrpex](https://github.com/skyrpex).
