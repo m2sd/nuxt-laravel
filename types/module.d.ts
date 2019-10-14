@@ -1,6 +1,7 @@
 import { Module } from '@nuxt/types';
 export interface Options {
     root?: string;
+    publicDir?: string;
     publicPath?: string;
     outputPath?: string;
     server?: {
