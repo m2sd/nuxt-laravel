@@ -14,6 +14,8 @@ Looking for the old CLI extension? [nuxt-laravel](https://github.com/m2sd/nuxt-l
 This module makes it easy to integrate a [NuxtJS](https://nuxtjs.org) SPA into a [Laravel](https://laravel.com) application.  
 The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/laravel-nuxt-js) by [skyrpex](https://github.com/skyrpex).
 
+> **Hint:** Use his composer exension [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt) if you want to forward multiple specific routes to nuxt.
+
 ## Features
 
 * Easyly deploy an existing Nuxt app inside a Laravel application
@@ -33,12 +35,15 @@ npm install --save-dev @nuxtjs/axios @nuxtjs/proxy nuxt-laravel@next
 
 ### Configuration
 
-Simply include `nuxt-laravel` in `modules` and set the `mode` setting to `'spa'` in your `nuxt.config.js`
+Simply include `nuxt-laravel` in `buildModules` (or `modules` for `nuxt@^2.8`) and set the `mode` setting to `'spa'` in your `nuxt.config.js`
 
 ```js
 export default {
   mode: 'spa',
-  modules: [
+  buildModules: [
+    // if you are using @nuxtjs/axios or @nuxtjs/proxy in your config, make sure to include them above nuxt-laravel
+    //'@nuxtjs/axios',
+    //'@nuxtjs/proxy', (nuxt@^2.8 only as this should not be included in buildModules)
     'nuxt-laravel'
   ]
 }
@@ -134,6 +139,8 @@ Laravel integration is accomplished through two environment variables.
     // ...
 ```
 
+#### Forwarding all undefined routes to nuxt
+
 `routes/web.php`:
 
 ```php
@@ -153,4 +160,51 @@ Route::get(
       return file_get_contents(getenv('NUXT_OUTPUT_PATH') ?: public_path('spa.html'));
     }
 )->where('uri', '.*');
+```
+
+#### Forward multiple specific routes to nuxt (using [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt))
+
+`config/nuxt.php`:
+
+```php
+return [
+    /**
+     * In production, the SPA page will be located in the filesystem.
+     * The location can be set by env variable NUXT_OUTPUT_PATH or falls back to a static file location
+     *
+     * In development, the SPA page will be fetched from the nuxt development server.
+     * The nuxt server URL will be passed by overwriting the env variable NUXT_OUTPUT_PATH.
+     */
+    'page' => getenv('NUXT_URL') ?: public_path('spa.html')
+];
+```
+
+`routes/web.php`:
+
+```php
+// Make sure nuxt path resolution of nuxt router corresponds to the defined routes
+
+/**
+ * Forward specific route to nuxt router
+ *
+ * This route could be defined:
+ * - in `<nuxtRoot>/pages/app/index.vue`
+ * - in `<nuxtRoot>/pages/index.vue` if `nuxtConfig.router.base = 'app'`
+ */
+Route::get(
+    'app',
+    '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
+);
+
+/**
+ * Forward all subpages of a specific route to nuxt router
+ *
+ * These routes could be defined ({uri} may contain slashes '/'):
+ * - in `<nuxtRoot>/pages/app/subpage/{uri}`
+ * - in `<nuxtRoot>/pages/subpage/{uri}` if `nuxtConfig.router.base = 'app'`
+ */
+Route::get(
+    'app/subpage/{uri}',
+    '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
+)->where('uri', '*')
 ```
