@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0-beta.4](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.3...v4.2.0-beta.4) (2019-10-14)
+
+
+### Bug Fixes
+
+* **module/dev:** resolve index route from within extendRoutes ([d2fedf3](https://github.com/m2sd/nuxt-laravel/commit/d2fedf358fa3376d25c72ca41e8a682a5d4906fd))
+
 ## [4.2.0-beta.3](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.2...v4.2.0-beta.3) (2019-10-14)
 
 ## [4.2.0-beta.2](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.1...v4.2.0-beta.2) (2019-10-14)
