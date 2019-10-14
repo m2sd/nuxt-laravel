@@ -21,7 +21,7 @@ The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/lara
 
 ## Features
 
-* Easyly deploy an existing Nuxt app inside a Laravel application
+* Easyly deploy an existing Nuxt app inside a Laravel application or vice versa
 * Test your Nuxt app with live reloading, HMR and the Laravel test server with a single command
 * Seamlessly integrate Nuxt into the URL resolution of Laravel
 * Share cookies and session state between frontend (Nuxt) and backend (Laravel) without the need for an API token
@@ -109,6 +109,32 @@ Laravel integration is accomplished through two environment variables.
   * When nuxt is build through this module (and `dotEnvExport` is truthy) this variable will be written to the `.env` file in laravels root directory, containing the resolved `outputPath` (see above).
 
 > **!!! Attention !!!:** You have to use PHPs native `getenv()` function, instead of Laravels `env()` helper to retrieve these varaibles, because the Laravel helper ignores putenv vars.
+
+### Example scaffolding in existent Laravel application
+
+1. Create a new nuxt app in `resources/nuxt`
+
+   ```bash
+   npx create-nuxt-app resources/nuxt
+   ```
+
+2. Migrate all dependencies and scipts (most importantly `dev` and `build`) from `resources/nuxt/package.json` into `package.json` in Laravel root and delete it
+3. Move all configuration files from `resources/nuxt` to Laravel root (or merge where appropiate, e.g. `.eslintrc.js`)
+4. Install the module and it's peer dependencies
+
+   ```bash
+   npm i -D nuxt-laravel@next @nuxtjs/axios @nuxtjs/proxy
+   ```
+
+5. Update `nuxt.config.js`
+
+   ```js
+   module.exports = {
+     mode: 'spa',
+     // ...
+     modules: ['nuxt-laravel']
+   }
+   ```
 
 ### Example Laravel configuration
 
