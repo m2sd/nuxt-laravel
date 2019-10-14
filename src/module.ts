@@ -16,10 +16,12 @@ export interface Options {
   publicDir?: string
   publicPath?: string
   outputPath?: string
-  server?: {
-    host?: string
-    port?: number
-  }
+  server?:
+    | boolean
+    | {
+        host?: string
+        port?: number
+      }
   dotEnvExport?: boolean
 }
 
@@ -42,18 +44,22 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
       publicDir: 'public',
       publicPath: baseUrl,
       outputPath: path.join(process.cwd(), 'public', baseUrl, '_spa.html'),
-      server:
-        this.options.dev && this.options.server
-          ? {
-              host: this.options.server.host,
-              port: +(this.options.server.port || 3000) + 1
-            }
-          : false,
+      server: true,
       dotEnvExport: false
     },
     this.options.laravel,
     _moduleOptions
   )
+
+  if (typeof moduleOptions.server === 'boolean' && moduleOptions.server) {
+    moduleOptions.server =
+      this.options.dev && this.options.server
+        ? {
+            host: this.options.server.host,
+            port: +(this.options.server.port || 3000) + 1
+          }
+        : false
+  }
   const laravelRoot = path.resolve(process.cwd(), moduleOptions.root)
   const generateDir = path.join(laravelRoot, moduleKey)
   const publicDir = path.resolve(laravelRoot, moduleOptions.publicDir)

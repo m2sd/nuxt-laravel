@@ -69,18 +69,21 @@ export default {
 
 ### Module Options
 
-| option         | type      | description                                                                                                   | default                                                  |
-| -------------- | --------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| `root`         | `string`  | Path to laravel directory (is resolved relative to `process.cwd()`)                                           | `process.cwd()`                                          |
-| `publicDir`    | `string`  | The folder where laravel serves assets from (is resolved relative to `root`)                                  | `'public'`                                               |
-| `publicPath`   | `string`  | Folder location to which generated assets are output (is resolved relative to and must reside in `publicDir`) | `process.env.NUXT_OUTPUT_PATH || nuxtConfig.router.base` |
-| `outputPath`   | `string`  | File location to which the index route will be rendered, (is resolved relative to `root`)                     | `path.join(publicDir, publicPath, '_spa.html')`          |
-| `server`       | `object`  | Settings for the Laravel testserver                                                                           | *(see below)*                                            |
-| `dotEnvExport` | `boolean` | Whether the `NUXT_OUTPUT_PATH` varibale should be written to the `.env` file in the laravel root directory    | `false`                                                  |
+| option         | type                  | description                                                                                                   | default                                                    |
+| -------------- | --------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `root`         | `string`              | Path to laravel directory (is resolved relative to `process.cwd()`)                                           | `process.cwd()`                                            |
+| `publicDir`    | `string`              | The folder where laravel serves assets from (is resolved relative to `root`)                                  | `'public'`                                                 |
+| `publicPath`   | `string`              | Folder location to which generated assets are output (is resolved relative to and must reside in `publicDir`) | `process.env.NUXT_OUTPUT_PATH \|\| nuxtConfig.router.base` |
+| `outputPath`   | `string`              | File location to which the index route will be rendered, (is resolved relative to `root`)                     | `path.join(publicDir, publicPath, '_spa.html')`            |
+| `server`       | `boolean` or `object` | Settings for the Laravel testserver                                                                           | *(see below)*                                              |
+| `dotEnvExport` | `boolean`             | Whether the `NUXT_OUTPUT_PATH` varibale should be written to the `.env` file in the laravel root directory    | `false`                                                    |
 
 The module loads the `.env` file from yout laravel root, so you can set the `NUXT_OUTPUT_PATH` environment variable from there.
 
 #### The `server` setting
+
+If this setting is set to `false` the module will be disabled for development.  
+Setting this to `true` is equivalient to omitting it and will simply use the default configuration.
 
 | option | type     | description                 | default                      |
 | ------ | -------- | --------------------------- | ---------------------------- |

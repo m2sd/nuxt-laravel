@@ -4,7 +4,7 @@ export interface Options {
     publicDir?: string;
     publicPath?: string;
     outputPath?: string;
-    server?: {
+    server?: boolean | {
         host?: string;
         port?: number;
     };
