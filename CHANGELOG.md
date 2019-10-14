@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0-beta.1](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.0...v4.2.0-beta.1) (2019-10-14)
+
+
+### Bug Fixes
+
+* **server:** support boolean settings ([e445e0a](https://github.com/m2sd/nuxt-laravel/commit/e445e0a1d2a4fa86417ff846516e7be50cbe3663))
+
 ## [4.2.0-beta.0](https://github.com/m2sd/nuxt-laravel/compare/v4.1.9...v4.2.0-beta.0) (2019-10-14)
 
 
