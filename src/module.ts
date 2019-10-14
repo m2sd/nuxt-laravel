@@ -73,52 +73,6 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
   const outputPath = path.resolve(laravelRoot, moduleOptions.outputPath)
   const outputDir = path.dirname(outputPath)
 
-  const indexRoute = (router => {
-    if (!router || !router.routes) {
-      return null
-    }
-
-    let index = router.routes.find(
-      // First, check if there is an unnamed route
-      // Then, check if there's a route at /
-      // Finally, check for a name with first segment index
-      route =>
-        route.name === '' ||
-        route.path === '/' ||
-        !!(route.name && route.name.match(/^index(-\w+)?$/))
-    )
-
-    // If we were unable to resolve the index route,
-    // but modules are present
-    if (!index && this.options.modules) {
-      // we check for nuxt-i18n module
-      const i18nModuleOptions = this.options.modules.find(
-        m => (Array.isArray(m) && m[0] === 'nuxt-i18n') || m === 'nuxt-i18n'
-      )
-      const i18nOptions = Object.assign(
-        {},
-        i18nModuleOptions,
-        this.options.i18n
-      )
-
-      // if i18n module is present, we try to find the translated index route
-      if (i18nOptions.defaultLocale) {
-        const separator = i18nOptions.routesNameSeparator || '___'
-        index = router.routes.find(
-          route =>
-            !!(
-              route.name &&
-              route.name.match(
-                new RegExp(`^index${separator}${i18nOptions.defaultLocale}`)
-              )
-            )
-        )
-      }
-    }
-
-    return index
-  })(this.options.router)
-
   // cli helper
   const enableLaravelSupport = (enabled: boolean = true) => {
     const status = enabled
@@ -144,15 +98,6 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
     logger.error(
       `Unable to find 'artisan' executable in Laravel path ${laravelRoot}`
     )
-
-    enableLaravelSupport(false)
-
-    return
-  }
-
-  // Fail with error if index route cannot be resolved
-  if (!indexRoute) {
-    logger.error('Unable to resolve index route')
 
     enableLaravelSupport(false)
 
@@ -219,10 +164,57 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
 
     // extend routes to provide an endpoint for Laravel
     this.extendRoutes((routes: NuxtRouteConfig[]) => {
+      let index = routes.find(
+        // First, check if there is an unnamed route
+        // Then, check if there's a route at /
+        // Finally, check for a name with first segment index
+        route =>
+          route.name === '' ||
+          route.path === '/' ||
+          !!(route.name && route.name.match(/^index(-\w+)?$/))
+      )
+
+      // If we were unable to resolve the index route,
+      // but modules are present
+      if (!index && this.options.modules) {
+        // we check for nuxt-i18n module
+        const i18nModuleOptions = this.options.modules.find(
+          m => (Array.isArray(m) && m[0] === 'nuxt-i18n') || m === 'nuxt-i18n'
+        )
+        const i18nOptions = Object.assign(
+          {},
+          i18nModuleOptions,
+          this.options.i18n
+        )
+
+        // if i18n module is present, we try to find the translated index route
+        if (i18nOptions.defaultLocale) {
+          const separator = i18nOptions.routesNameSeparator || '___'
+          index = routes.find(
+            route =>
+              !!(
+                route.name &&
+                route.name.match(
+                  new RegExp(`^index${separator}${i18nOptions.defaultLocale}`)
+                )
+              )
+          )
+        }
+      }
+
+      // Fail with error if index route cannot be resolved
+      if (!index) {
+        logger.error('Unable to resolve index route')
+
+        enableLaravelSupport(false)
+
+        return
+      }
+
       // add a copy of the index route
       // on the specified render path
       routes.push(
-        Object.assign({}, indexRoute, {
+        Object.assign({}, index, {
           name: moduleKey,
           path: `/${moduleKey}`
         })
@@ -330,7 +322,7 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
 
       fs.ensureDirSync(outputDir)
       try {
-        const { html, error } = await nuxt.server.renderRoute(indexRoute.path)
+        const { html, error } = await nuxt.server.renderRoute('/')
 
         if (error) {
           throw error
