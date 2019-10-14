@@ -176,7 +176,7 @@ return [
      * In development, the SPA page will be fetched from the nuxt development server.
      * The nuxt server URL will be passed by overwriting the env variable NUXT_OUTPUT_PATH.
      */
-    'page' => getenv('NUXT_OUTPUT_PATH') ?: public_path('_spa.html')
+    'page' => getenv('NUXT_OUTPUT_PATH') ?: public_path('app/_spa.html')
 ];
 ```
 
@@ -194,18 +194,18 @@ Route::get(
 )->name('nuxt');
 
 /**
- * Forward all subpages of a specific route to nuxt router
+ * Forward all paths under a specific URI to nuxt router
  *
  * These routes are rendered by:
- * - if `{uri} = '/'`
+ * - if `{path} = '/'`
  *   `<nuxtRoot>/pages/subpage.vue`
  *    or
  *   `<nuxtRoot>/pages/subpage/index.vue`
  *
- * - if `{uri} = '/<subpages>'` (`<subpages>` may contain slashes '/')
- *   `<nuxtRoot>/pages/subpage/<subpages>.vue`
+ * - if `{path} = '/<path>'` (`<path>` may contain slashes '/')
+ *   `<nuxtRoot>/pages/subpage/<path>.vue`
  *   or
- *   `<nuxtRoot>/pages/subpage/<subpages>/index.vue`
+ *   `<nuxtRoot>/pages/subpage/<path>/index.vue`
  */
 Route::get(
     'app/subpage{path}',
