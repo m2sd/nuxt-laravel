@@ -175,7 +175,7 @@ return [
      * In development, the SPA page will be fetched from the nuxt development server.
      * The nuxt server URL will be passed by overwriting the env variable NUXT_OUTPUT_PATH.
      */
-    'page' => getenv('NUXT_URL') ?: public_path('spa.html')
+    'page' => getenv('NUXT_OUTPUT_PATH') ?: public_path('spa.html')
 ];
 ```
 
