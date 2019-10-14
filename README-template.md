@@ -188,7 +188,7 @@ return [
  * Forward specific route to nuxt router
  *
  * This route could be defined:
- * - in `<nuxtRoot>/pages/app/index.vue`
+ * - in `<nuxtRoot>/pages/app.vue` or `<nuxtRoot>/pages/app/index.vue`
  * - in `<nuxtRoot>/pages/index.vue` if `nuxtConfig.router.base = 'app'`
  */
 Route::get(
@@ -200,11 +200,19 @@ Route::get(
  * Forward all subpages of a specific route to nuxt router
  *
  * These routes could be defined ({uri} may contain slashes '/'):
- * - in `<nuxtRoot>/pages/app/subpage/{uri}`
- * - in `<nuxtRoot>/pages/subpage/{uri}` if `nuxtConfig.router.base = 'app'`
+ * - in `<nuxtRoot>/pages/app/subpage.vue` if `{uri} = '/'`
+ * - in `<nuxtRoot>/pages/app/subpage/{uri}.vue` if `{uri} =  '/<subpages>'
+ * - in `<nuxtRoot>/pages/subpage.vue` if `{uri} = '/'` and `nuxtConfig.router.base = 'app'`
+ * - in `<nuxtRoot>/pages/subpage/{uri}.vue` if `{uri} = '/<subpages>'` and `nuxtConfig.router.base = 'app'`
  */
 Route::get(
-    'app/subpage/{uri}',
+    'app/subpage{uri}',
     '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
-)->where('uri', '*')
+)->where('uri', '^\/.*');
+
+// for missing trailing slash
+Route::get(
+    'app/subpage',
+    '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
+);
 ```
