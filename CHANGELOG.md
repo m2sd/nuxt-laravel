@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0-beta.0](https://github.com/m2sd/nuxt-laravel/compare/v4.1.9...v4.2.0-beta.0) (2019-10-14)
+
+
+### Features
+
+* **module:** finalize api and improve code structure ([fd9d332](https://github.com/m2sd/nuxt-laravel/commit/fd9d332ce409bb428e8f546e855c63e65574519c))
+
 ### [4.1.9](https://github.com/m2sd/nuxt-laravel/compare/v4.1.8...v4.1.9) (2019-10-14)
 
 ### [4.1.8](https://github.com/m2sd/nuxt-laravel/compare/v4.1.7...v4.1.8) (2019-10-14)
