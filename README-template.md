@@ -193,7 +193,7 @@ Route::get(
       }
 
       // Fetch and display the page from the render path on nuxt dev server or fallback to static file
-      return file_get_contents(getenv('NUXT_OUTPUT_PATH') ?: public_path('_spa.html'));
+      return file_get_contents(getenv('NUXT_OUTPUT_PATH') ?: public_path('spa.html'));
     }
 )->where('path', '.*')
  // Redirect to Nuxt from within Laravel
@@ -245,7 +245,7 @@ return [
      * In development, the SPA page will be fetched from the nuxt development server.
      * The nuxt server URL will be passed by overwriting the env variable NUXT_OUTPUT_PATH.
      */
-    'page' => getenv('NUXT_OUTPUT_PATH') ?: public_path('app/_spa.html')
+    'page' => getenv('NUXT_OUTPUT_PATH') ?: public_path('app/index.html')
 ];
 ```
 
@@ -279,15 +279,9 @@ Route::get(
 Route::get(
     'app/subpage{path}',
     '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
-)->where('path', '^\/.*')
+)->where('path', '.*')
  // Redirect to a spcific subpage/<path> from within Laravel
  // by using Laravels route helper
- // e.g.: `route('nuxt.subpage.path', ['path' => '/<path>'])`
- ->name('nuxt.subpage.path');
-
-// Catch missing trailing slash
-Route::get(
-    'app/subpage',
-    '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
-)->name('nuxt.subpage');
+ // e.g.: `route('nuxt.subpage', ['path' => '/<path>'])`
+ ->name('nuxt.subpage');
 ```
