@@ -126,8 +126,6 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
       `http://${moduleOptions.server.host}:${moduleOptions.server.port}`
     )
 
-    console.log(laravelUrl.origin)
-
     this.options.axios = {
       ...(this.options.axios || {}),
       proxy: true

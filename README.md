@@ -107,7 +107,9 @@ Laravel integration is accomplished through two environment variables.
   * When the Laravel test server is started through this module this variable is overwritten with a special index route on the nuxt test server via putenv.  
   * When nuxt is build through this module (and `dotEnvExport` is truthy) this variable will be written to the `.env` file in laravels root directory, containing the resolved `outputPath` (see above).
 
-> **!!! Attention !!!:** You have to use PHPs native `getenv()` function, instead of Laravels `env()` helper to retrieve these varaibles, because the Laravel helper ignores putenv vars.
+> **❗❗❗ Attention ❗❗❗:**  
+> You have to use PHPs native `getenv()` function, instead of Laravels `env()` helper to retrieve these varaibles,  
+> because the Laravel helper ignores putenv vars.
 
 ### Example scaffolding in existent Laravel application
 
@@ -203,8 +205,34 @@ Route::get(
 #### Forward multiple specific routes to nuxt (using [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt))
 
 Make sure nuxt path resolution of nuxt router corresponds to the defined routes.  
+This example assumes option `nuxtConfig.router.base` to have been set to `'/app/'`
 
-> **IMPORTANT:** This example assumes option `nuxtConfig.router.base` to have been set to `'/app/'`.
+> **❗❗❗ Attention ❗❗❗:**  
+> Nuxt router has problems resolving the root route without a trailing slash.  
+> You will have to handle this in your server configuration:
+>
+> * **Nginx:** `rewrite ^/app$ /app/ last;`
+> * **Apache:** `RewriteRule ^/app$ /app/ [L]`
+> * **Artisan:**
+>   In `server` file:
+>
+>   ```php
+>   // ...
+>
+>   // This file allows us to emulate Apache's "mod_rewrite" functionality from the
+>   // built-in PHP web server. This provides a convenient way to test a Laravel
+>   // application without having installed a "real" web server software here.
+>   if ('/app' === $uri) {
+>       header('Status: 301 Moved Permanently', false, 301);
+>       header('Location: '.$uri.'/');
+>
+>       return true;
+>   } elseif ('/' !== $uri && file_exists(__DIR__.'/public'.$uri)) {
+>       return false;
+>   }
+>
+>   // ...
+>   ```
 
 `config/nuxt.php`:
 
