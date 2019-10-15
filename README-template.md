@@ -30,6 +30,8 @@ The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/lara
 
 ### Installation
 
+> **Hint:** If your stating fresh consider cloning [nuxt-laravel-starter](https://github.com/m2sd/nuxt-laravel-starter)
+
 Install this package and its peer dependencies.
 
 ```bash
@@ -112,8 +114,6 @@ Laravel integration is accomplished through two environment variables.
 > because the Laravel helper ignores putenv vars.
 
 ### Example scaffolding in existent Laravel application
-
-> **Example repo:** [nuxt-laravel-example](https://github.com/m2sd/nuxt-laravel-example)
 
 1. Create a new nuxt app in `resources/nuxt`
 
