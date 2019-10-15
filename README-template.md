@@ -22,7 +22,7 @@ The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/lara
 ## Features
 
 * Easyly deploy an existing Nuxt app inside a Laravel application or vice versa
-* Test your Nuxt app with live reloading, HMR and the Laravel test server with a single command
+* Test your Nuxt app with live reloading, HMR and the autoconfigured Laravel test server
 * Seamlessly integrate Nuxt into the URL resolution of Laravel
 * Share cookies and session state between frontend (Nuxt) and backend (Laravel) without the need for an API token
 
@@ -44,9 +44,9 @@ Simply include `nuxt-laravel` in `modules` and set the `mode` setting to `'spa'`
 export default {
   mode: 'spa',
   modules: [
-    // if you are using @nuxtjs/axios in your config, make sure to include them above nuxt-laravel
-    //'@nuxtjs/axios',
+    // Include it first, so that configuration alterations are propagated to other modules
     'nuxt-laravel'
+    // ... other modules
   ]
 }
 ```
@@ -69,14 +69,13 @@ export default {
 
 ### Module Options
 
-| option         | type                  | description                                                                                                   | default                                                    |
-| -------------- | --------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `root`         | `string`              | Path to laravel directory (is resolved relative to `process.cwd()`)                                           | `process.cwd()`                                            |
-| `publicDir`    | `string`              | The folder where laravel serves assets from (is resolved relative to `root`)                                  | `'public'`                                                 |
-| `publicPath`   | `string`              | Folder location to which generated assets are output (is resolved relative to and must reside in `publicDir`) | `process.env.NUXT_OUTPUT_PATH \|\| nuxtConfig.router.base` |
-| `outputPath`   | `string`              | File location to which the index route will be rendered, (is resolved relative to `root`)                     | `path.join(publicDir, publicPath, '_spa.html')`            |
-| `server`       | `boolean` or `object` | Settings for the Laravel testserver                                                                           | *(see below)*                                              |
-| `dotEnvExport` | `boolean`             | Whether the `NUXT_OUTPUT_PATH` varibale should be written to the `.env` file in the laravel root directory    | `false`                                                    |
+| option         | type                  | description                                                                                                                                                                   | default         |
+| -------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `root`         | `string`              | Path to laravel directory (is resolved relative to `process.cwd()`)                                                                                                           | `process.cwd()` |
+| `publicDir`    | `string`              | The folder where laravel serves assets from (is resolved relative to `root`)                                                                                                  | `'public'`      |
+| `outputPath`   | `string`              | File location to which an additional index route will be rendered, useful if you want to store it in a folder outside of Laravels public dir (is resolved relative to `root`) | `null`          |
+| `server`       | `boolean` or `object` | Settings for the Laravel testserver                                                                                                                                           | *(see below)*   |
+| `dotEnvExport` | `boolean`             | Whether the `NUXT_OUTPUT_PATH` varibale should be written to the `.env` file in the laravel root directory                                                                    | `false`         |
 
 The module loads the `.env` file from yout laravel root, so you can set the `NUXT_OUTPUT_PATH` environment variable from there.
 
@@ -90,10 +89,10 @@ Setting this to `true` is equivalient to omitting it and will simply use the def
 | `host` | `string` | Hostname for the testserver | `nuxtConfig.server.host`     |
 | `port` | `number` | Port for the testserver     | `nuxtConfig.server.port + 1` |
 
-#### The `publicPath` setting
+#### Path resolution inside `publicDir`
 
-If `publicPath` is set manually and does not reside inside configured `publicDir` the module will be deactivated.  
-If `publicPath` is set manually and is valid `nuxtConfig.router.base` will be overwritten with the resolved URL.
+If `nuxtConfig.router.base` is not set the SPA will be generated in the `publicDir` root with an index file name of `spa.html`.  
+If `nuxtConfig.router.base` is set the SPA will be generated in a corresponding location inside `publicDir` with the default index file name `index.html`.
 
 ## Laravel integration
 
@@ -112,6 +111,8 @@ Laravel integration is accomplished through two environment variables.
 
 ### Example scaffolding in existent Laravel application
 
+> **Example repo:** [nuxt-laravel-example](https://github.com/m2sd/nuxt-laravel-example)
+
 1. Create a new nuxt app in `resources/nuxt`
 
    ```bash
@@ -119,7 +120,7 @@ Laravel integration is accomplished through two environment variables.
    ```
 
 2. Migrate all dependencies and scipts (most importantly `dev` and `build`) from `resources/nuxt/package.json` into `package.json` in Laravel root and delete it
-3. Move all configuration files from `resources/nuxt` to Laravel root (or merge where appropiate, e.g. `.eslintrc.js`)
+3. Move all configuration files from `resources/nuxt` to Laravel root (or merge where appropiate, e.g. `.editorconfig`)
 4. Install the module and it's peer dependencies
 
    ```bash
@@ -130,9 +131,23 @@ Laravel integration is accomplished through two environment variables.
 
    ```js
    module.exports = {
+     srcDir: 'resources/nuxt',
      mode: 'spa',
-     // ...
-     modules: ['nuxt-laravel']
+     // ... other config
+     modules: [
+       'nuxt-laravel',
+       // ... other modules
+     ]
+   }
+   ```
+
+6. (Optional) If you use jest, or other tools that reference the Nuxt root independently, you have to update thier respective configuration to make them work correctly.  
+   Example `jest.config.js`:
+
+   ```js
+   module.exports = {
+     rootDir: 'resources/nuxt',
+     // ... other configurtion
    }
    ```
 
@@ -189,7 +204,7 @@ Route::get(
 
 Make sure nuxt path resolution of nuxt router corresponds to the defined routes.  
 
-> **IMPORTANT:** This example assumes the module option `publicPath` to have been set to `'app'`.
+> **IMPORTANT:** This example assumes option `nuxtConfig.router.base` to have been set to `'/app/'`.
 
 `config/nuxt.php`:
 
