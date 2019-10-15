@@ -114,7 +114,7 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
   if (this.options.dev) {
     // Fail with warning if server is not configured
     if (!moduleOptions.server) {
-      logger.warn('Laravel testserver is disabled')
+      logger.warn('Laravel test server is disabled')
 
       enableLaravelSupport(false)
 
@@ -214,7 +214,7 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
         }
         _serverInitialized = true
 
-        // Fail with warining if dev server is not enabled
+        // Fail with warning if dev server is not enabled
         if (!options.server) {
           logger.warn('Nuxt dev server is not enabled')
 
@@ -223,9 +223,12 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
           return
         }
 
-        if (fs.existsSync(publicPath) && publicPath !== publicDir) {
+        if (
+          fs.existsSync(publicPath) &&
+          publicPath.replace(publicDir, '').length > 1
+        ) {
           logger.warn(
-            'Removing production build to avoid conficts with dev server'
+            'Removing production build to avoid conflicts with dev server'
           )
           fs.removeSync(publicPath)
         }
@@ -242,7 +245,7 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
         logger.debug(`Nuxt url: ${nuxtUrl.href}`)
         logger.debug(`Laravel url: ${laravelUrl.href}`)
         try {
-          const testserver = execa(
+          const server = execa(
             'php',
             [
               'artisan',
@@ -262,12 +265,11 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
                 [nuxtOutputEnv]: nuxtUrl.href
               }),
               stderr: process.stderr,
-              stdin: process.stdin,
               stdout: process.stdout
             }
           )
 
-          testserver.on('error', () => {
+          server.on('error', () => {
             logger.error(`Failed to start Laravel server`)
           })
         } catch (error) {
@@ -283,7 +285,7 @@ const laravelModule: Module<Options> = function(_moduleOptions) {
     )
   }
 
-  // PROD behaviour
+  // PROD behavior
   if (!this.options.dev) {
     // configure generation
     this.options.generate = {
