@@ -15,6 +15,7 @@
   },
   "include": [
     "jest.config.js",
+    "src/templates/sw-cache.js",
     "src/**/*.ts",
     "tests/**/*.ts",
     "types/**/*.d.ts"

@@ -1,14 +1,5 @@
 import { Module } from '@nuxt/types';
-export interface Options {
-    root?: string;
-    publicDir?: string;
-    outputPath?: string;
-    server?: boolean | {
-        host?: string;
-        port?: number;
-    };
-    dotEnvExport?: boolean;
-}
+import { Options } from './options';
 declare const laravelModule: Module<Options>;
 export default laravelModule;
 export declare const meta: any;
