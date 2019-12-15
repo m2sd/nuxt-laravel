@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0-beta.11](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.10...v4.2.0-beta.11) (2019-12-15)
+
+
+### Bug Fixes
+
+* **sw-cache:** use empty array instead of null in routingExtensions ([53a2fe4](https://github.com/m2sd/nuxt-laravel/commit/53a2fe46140bc5999fcc94a1613e9b8a785a0f4f))
+
 ## [4.2.0-beta.10](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.9...v4.2.0-beta.10) (2019-12-15)
 
 
