@@ -49,7 +49,7 @@ const laravelModule: Module<Options> = function(overwrites) {
   if (config.cache) {
     const pwa = getModuleOptions(this.options, '@nuxtjs/pwa')
     const routingExtensions =
-      (pwa && pwa.workbox && pwa.workbox.routingExtensions) || null
+      (pwa && pwa.workbox && pwa.workbox.routingExtensions) || []
 
     const { dst } = this.addTemplate({
       src: path.join(__dirname, 'templates', 'workbox.cache.ejs'),
