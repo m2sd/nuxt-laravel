@@ -8,15 +8,11 @@ import { URL } from 'url'
 import { EOL } from 'os'
 
 import { moduleKey, laravelAppEnv, nuxtOutputEnv } from './constants'
-import { logger, addBadgeMessage } from './utils'
+import { logger, addBadgeMessage, getModuleOptions } from './utils'
 import { getConfiguration, Options } from './options'
 
 const laravelModule: Module<Options> = function(overwrites) {
   const config = getConfiguration(this.options, overwrites)
-
-  /** CONFIGURATION **/
-
-  // cli helper
 
   /** VALIDATION **/
 
@@ -48,6 +44,34 @@ const laravelModule: Module<Options> = function(overwrites) {
   }
 
   /** IMPLEMENTATION **/
+
+  // Optional cache module
+  if (config.cache) {
+    const pwa = getModuleOptions(this.options, '@nuxtjs/pwa')
+    const routingExtensions =
+      (pwa && pwa.workbox && pwa.workbox.routingExtensions) || null
+
+    const { dst } = this.addTemplate({
+      src: path.join(__dirname, 'templates', 'workbox.cache.ejs'),
+      options: config.cache,
+      fileName: config.cache.fileName
+    })
+
+    this.options.pwa = {
+      ...pwa,
+      workbox: {
+        ...(pwa && pwa.workbox),
+        routingExtensions: [
+          ...(typeof routingExtensions === 'string'
+            ? [routingExtensions]
+            : routingExtensions),
+          path.join(this.options.buildDir!, dst)
+        ]
+      }
+    }
+
+    this.requireModule('@nuxtjs/pwa')
+  }
 
   // DEV behavior
   if (this.options.dev) {
@@ -101,18 +125,10 @@ const laravelModule: Module<Options> = function(overwrites) {
       // If we were unable to resolve the index route,
       // but modules are present
       if (!index && this.options.modules) {
-        // we check for nuxt-i18n module
-        const i18nModuleOptions = this.options.modules.find(
-          m => (Array.isArray(m) && m[0] === 'nuxt-i18n') || m === 'nuxt-i18n'
-        )
-        const i18nOptions = Object.assign(
-          {},
-          i18nModuleOptions,
-          this.options.i18n
-        )
+        const i18nOptions = getModuleOptions(this.options, 'nuxt-i18n')
 
         // if i18n module is present, we try to find the translated index route
-        if (i18nOptions.defaultLocale) {
+        if (i18nOptions && i18nOptions.defaultLocale) {
           const separator = i18nOptions.routesNameSeparator || '___'
           index = routes.find(
             route =>
@@ -236,7 +252,6 @@ const laravelModule: Module<Options> = function(overwrites) {
       exclude: [/.*/],
       fallback: config.output.fallback
     }
-    logger.info('Generation configured for Laravel SPA.')
 
     this.nuxt.hook('generate:done', async ({ nuxt }: { nuxt: any }) => {
       // generate assets
@@ -305,6 +320,8 @@ const laravelModule: Module<Options> = function(overwrites) {
         )
       }
     })
+
+    logger.info('Generation configured for Laravel SPA.')
   }
 }
 

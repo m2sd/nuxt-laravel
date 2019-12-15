@@ -17,12 +17,12 @@ Looking for the old CLI extension? [nuxt-laravel](https://github.com/m2sd/nuxt-l
 This module makes it easy to integrate a [NuxtJS](https://nuxtjs.org) SPA into a [Laravel](https://laravel.com) application.  
 The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/laravel-nuxt-js) by [skyrpex](https://github.com/skyrpex).
 
-> **Hint:** Use his composer exension [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt) if you want to forward multiple specific routes to nuxt.
+> **Hint:** Use his composer extension [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt) if you want to forward multiple specific routes to nuxt.
 
 ## Features
 
-* Easyly deploy an existing Nuxt app inside a Laravel application or vice versa
-* Test your Nuxt app with live reloading, HMR and the autoconfigured Laravel test server
+* Easily deploy an existing Nuxt app inside a Laravel application or vice versa
+* Test your Nuxt app with live reloading, HMR and the auto-configured Laravel test server
 * Seamlessly integrate Nuxt into the URL resolution of Laravel
 * Share cookies and session state between frontend (Nuxt) and backend (Laravel) without the need for an API token
 
@@ -36,6 +36,12 @@ Install this package and its peer dependencies.
 
 ```bash
 npm install --save-dev @nuxtjs/axios @nuxtjs/proxy nuxt-laravel@next
+```
+
+or
+
+```bash
+yarn add --dev @nuxtjs/axios @nuxtjs/proxy nuxt-laravel@next
 ```
 
 ### Configuration
@@ -77,19 +83,42 @@ export default {
 | `publicDir`    | `string`              | The folder where laravel serves assets from (is resolved relative to `root`)                                                                                                  | `'public'`      |
 | `outputPath`   | `string`              | File location to which an additional index route will be rendered, useful if you want to store it in a folder outside of Laravels public dir (is resolved relative to `root`) | `null`          |
 | `server`       | `boolean` or `object` | Settings for the Laravel testserver                                                                                                                                           | *(see below)*   |
+| `swCache`      | `boolean` or `object` | Settings for a cache endpoint workbox extensions using `@nuxtjs/pwa`                                                                                                          | *(see below)*   |
 | `dotEnvExport` | `boolean`             | Whether the `NUXT_OUTPUT_PATH` varibale should be written to the `.env` file in the laravel root directory                                                                    | `false`         |
 
-The module loads the `.env` file from yout laravel root, so you can set the `NUXT_OUTPUT_PATH` environment variable from there.
+The module loads the `.env` file from your laravel root, so you can set the `NUXT_OUTPUT_PATH` environment variable from there.
 
 #### The `server` setting
 
 If this setting is set to `false` the module will be disabled for development.  
-Setting this to `true` is equivalient to omitting it and will simply use the default configuration.
+Setting this to `true` is equivalent to omitting it and will simply use the default configuration.
 
 | option | type     | description                 | default                      |
 | ------ | -------- | --------------------------- | ---------------------------- |
 | `host` | `string` | Hostname for the testserver | `nuxtConfig.server.host`     |
 | `port` | `number` | Port for the testserver     | `nuxtConfig.server.port + 1` |
+
+#### The `swCache` setting
+
+To use this setting you have to install the optional dependency `@nuxtjs/pwa`.
+
+```bash
+npm install --save-dev @nuxtjs/pwa
+```
+
+or
+
+```bash
+yarn add --dev @nuxtjs/pwa
+```
+
+If this setting is set to `true` the caching endpoint will be added with the default configuration.
+
+| option     | type     | description                                                                               | default                   |
+| ---------- | -------- | ----------------------------------------------------------------------------------------- | ------------------------- |
+| `name`     | `string` | The name for the cache to which values are written                                        | `'__nuxt_laravel'`        |
+| `fileName` | `string` | The name for the file generated in the nuxt buildDir                                      | `'workbox.cache.js'`      |
+| `endpoint` | `string` | The endpoint to which values can be `post`ed/from which values can be gotten (`get`) from | `'/__nuxt_laravel_cache'` |
 
 #### Path resolution inside `publicDir`
 
@@ -183,7 +212,7 @@ Laravel integration is accomplished through two environment variables.
 // ...
 // Add this route last as a catch all for undefined routes.
 Route::get(
-    '{path}',
+    '{path?}',
     function($request) {
       // ...
       // If the request expects JSON, it means that
@@ -277,7 +306,7 @@ Route::get(
  *   `<nuxtRoot>/pages/subpage/<path>/index.vue`
  */
 Route::get(
-    'app/subpage{path}',
+    'app/subpage{path?}',
     '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
 )->where('path', '.*')
  // Redirect to a spcific subpage/<path> from within Laravel

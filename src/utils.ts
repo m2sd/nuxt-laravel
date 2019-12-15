@@ -17,3 +17,31 @@ export const addBadgeMessage = (
 
   options.cli!.badgeMessages.push(`Laravel support is ${status}`)
 }
+
+export const getModuleOptions = (
+  options: Configuration,
+  moduleKey: string,
+  optionsKey?: string
+) => {
+  if (options.modules) {
+    const nuxtModule = options.modules.find(
+      m => (Array.isArray(m) && m[0] === moduleKey) || m === moduleKey
+    )
+
+    if (nuxtModule) {
+      const optKey = optionsKey || moduleKey.split(/[-/]/).pop()
+
+      const moduleOptions = Object.assign(
+        {},
+        (Array.isArray(nuxtModule) && nuxtModule[1]) || {},
+        optKey ? options[optKey] : {}
+      )
+
+      if (Object.keys(moduleOptions).length) {
+        return moduleOptions
+      }
+    }
+  }
+
+  return null
+}

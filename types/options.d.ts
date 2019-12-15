@@ -34,10 +34,15 @@ export declare const getConfiguration: (nuxtOptions: Configuration, overwrites?:
         fallback: string;
         additional: string | false;
     };
-    cache: boolean | {
+    cache: false | {
         name: string;
-        fielName: string;
+        fileName: string;
         endpoint: string;
     };
     routerBase: string;
 };
+declare module '@nuxt/types' {
+    interface Configuration {
+        laravel: Options;
+    }
+}

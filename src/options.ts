@@ -73,10 +73,16 @@ export const getConfiguration = (
     }
   })()
 
-  const cache = (() => {
+  const cache:
+    | false
+    | {
+        name: string
+        fileName: string
+        endpoint: string
+      } = (() => {
     const defaults = {
       name: moduleKey,
-      fielName: 'sw-cache.js',
+      fileName: 'workbox.cache.js',
       endpoint: `/${moduleKey}_cache`
     }
 
@@ -98,5 +104,11 @@ export const getConfiguration = (
     output,
     cache,
     routerBase
+  }
+}
+
+declare module '@nuxt/types' {
+  export interface Configuration {
+    laravel: Options
   }
 }
