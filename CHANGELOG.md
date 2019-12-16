@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0-beta.12](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.11...v4.2.0-beta.12) (2019-12-16)
+
+
+### Bug Fixes
+
+* **types:** make nuxt config property laravel optional ([69b053d](https://github.com/m2sd/nuxt-laravel/commit/69b053df654d2f2e36fd5e1ccea5a976b421cbca))
+
 ## [4.2.0-beta.11](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.10...v4.2.0-beta.11) (2019-12-15)
 
 
