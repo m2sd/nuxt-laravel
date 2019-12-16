@@ -44,6 +44,23 @@ or
 yarn add --dev @nuxtjs/axios @nuxtjs/proxy nuxt-laravel@next
 ```
 
+#### Typescript
+
+To have code completion/type checking on the `Configuration` interface from `@nuxt/types`, include the package in your `tsconfig.json`.
+
+```json
+{
+  "compilerOptions": {
+    // ...
+    "types": [
+        "@nuxt/types",
+        // ...
+        "nuxt-laravel"
+    ]
+  }
+}
+```
+
 ### Configuration
 
 Simply include `nuxt-laravel` in `modules` and set the `mode` setting to `'spa'` in your `nuxt.config.js`
