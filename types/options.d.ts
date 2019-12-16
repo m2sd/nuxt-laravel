@@ -43,6 +43,6 @@ export declare const getConfiguration: (nuxtOptions: Configuration, overwrites?:
 };
 declare module '@nuxt/types' {
     interface Configuration {
-        laravel: Options;
+        laravel?: Options;
     }
 }

@@ -109,6 +109,6 @@ export const getConfiguration = (
 
 declare module '@nuxt/types' {
   export interface Configuration {
-    laravel: Options
+    laravel?: Options
   }
 }
