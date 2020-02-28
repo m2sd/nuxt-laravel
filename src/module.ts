@@ -182,7 +182,7 @@ const laravelModule: Module<Options> = function(overwrites) {
 
         if (
           fs.existsSync(config.laravel.public) &&
-          config.laravel.public.replace(config.output.dest, '').length > 1
+          config.output.dest.replace(config.laravel.public, '').length > 1
         ) {
           logger.warn(
             'Removing production build to avoid conflicts with dev server'

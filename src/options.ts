@@ -66,7 +66,7 @@ export const getConfiguration = (
     return {
       src: path.join(laravel.root, moduleKey),
       dest: path.join(laravel.public, routerBase),
-      fallback: `${routerBase.length > 1 ? 'spa' : 'index'}.html`,
+      fallback: `${routerBase.length > 1 ? 'index' : 'spa'}.html`,
       additional: outputPath
         ? path.resolve(laravel.root, outputPath)
         : (false as false)
