@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0-beta.14](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.13...v4.2.0-beta.14) (2020-02-28)
+
+
+### Bug Fixes
+
+* **module:** use correct conditions for index fallback and dest removal ([15d1a3b](https://github.com/m2sd/nuxt-laravel/commit/15d1a3b7100374025dcf395734c23385efbff1d5))
+
 ## [4.2.0-beta.13](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.12...v4.2.0-beta.13) (2019-12-16)
 
 ## [4.2.0-beta.12](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.11...v4.2.0-beta.12) (2019-12-16)
