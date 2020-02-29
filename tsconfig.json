@@ -9,6 +9,7 @@
     "noUnusedParameters": true,
     "baseUrl": ".",
     "types": [
+      "@types/node",
       "@types/jest"
     ],
     "esModuleInterop": true

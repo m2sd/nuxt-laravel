@@ -14,8 +14,9 @@ export interface Options {
     };
     dotEnvExport?: boolean;
 }
+export declare const validateOptions: (options: Options) => options is Required<Pick<Options, "server" | "root" | "publicDir" | "swCache" | "dotEnvExport">> & Pick<Options, "outputPath">;
 export declare const getConfiguration: (nuxtOptions: Configuration, overwrites?: Options | undefined) => {
-    options: Options;
+    options: Required<Pick<Options, "server" | "root" | "publicDir" | "swCache" | "dotEnvExport">> & Pick<Options, "outputPath">;
     nuxt: {
         urlPath: string;
         routerPath: string;
@@ -26,7 +27,7 @@ export declare const getConfiguration: (nuxtOptions: Configuration, overwrites?:
         server: false | {
             host?: string | undefined;
             port: number;
-        } | undefined;
+        };
     };
     output: {
         src: string;

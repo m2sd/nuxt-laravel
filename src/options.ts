@@ -4,7 +4,7 @@ import { merge } from 'lodash'
 
 import { Configuration } from '@nuxt/types'
 
-import defaults from './defaults'
+import defaults, { swCacheDefaults } from './defaults'
 import { moduleKey } from './constants'
 
 export interface Options {
@@ -27,13 +27,34 @@ export interface Options {
   dotEnvExport?: boolean
 }
 
+export const validateOptions = (
+  options: Options
+): options is Required<Omit<Options, 'outputPath'>> &
+  Pick<Options, 'outputPath'> => {
+  return (
+    typeof options.root === 'string' &&
+    typeof options.publicDir === 'string' &&
+    (typeof options.server === 'boolean' ||
+      (typeof options.server === 'object' &&
+        typeof options.server.port === 'number')) &&
+    (typeof options.swCache === 'boolean' ||
+      (typeof options.swCache === 'object' &&
+        typeof options.swCache.name === 'string')) &&
+    typeof options.dotEnvExport === 'boolean'
+  )
+}
+
 export const getConfiguration = (
   nuxtOptions: Configuration,
   overwrites?: Options
 ) => {
   const routerBase = (nuxtOptions.router && nuxtOptions.router.base) || '/'
 
-  const options: Options = merge(defaults, nuxtOptions.laravel, overwrites)
+  const options = merge({}, defaults, nuxtOptions.laravel, overwrites)
+
+  if (!validateOptions(options)) {
+    throw new Error('[nuxt-laravel] Invalid configuration')
+  }
 
   const nuxt = {
     urlPath: path.posix.join(routerBase, moduleKey),
@@ -41,25 +62,34 @@ export const getConfiguration = (
   }
 
   const laravel = (() => {
-    const laravelRoot = path.resolve(process.cwd(), options.root || '')
+    const laravelRoot = path.resolve(process.cwd(), options.root)
     const server =
-      typeof options.server === 'boolean' && options.server
-        ? nuxtOptions.server
-          ? {
-              host: nuxtOptions.server.host,
-              port: +(nuxtOptions.server.port || 3000) + 1
-            }
-          : (false as false)
-        : options.server
+      typeof options.server === 'object'
+        ? options.server
+        : options.server && nuxtOptions.server
+        ? {
+            host: nuxtOptions.server.host,
+            port: +(nuxtOptions.server.port || 3000) + 1
+          }
+        : (false as false)
+
+    if (
+      server &&
+      nuxtOptions.server &&
+      server.host === nuxtOptions.server.host &&
+      server.port === nuxtOptions.server.port
+    ) {
+      server.port = server.port + 1
+    }
 
     return {
       root: laravelRoot,
-      public: path.resolve(laravelRoot, options.publicDir || 'public'),
+      public: path.resolve(laravelRoot, options.publicDir),
       server
     }
   })()
 
-  dotenv.config({ path: laravel.root })
+  dotenv.config({ path: `${laravel.root}/.env` })
   const output = (() => {
     const outputPath = process.env.NUXT_OUTPUT_PATH || options.outputPath
 
@@ -80,21 +110,11 @@ export const getConfiguration = (
         fileName: string
         endpoint: string
       } = (() => {
-    const defaults = {
-      name: moduleKey,
-      fileName: 'workbox.cache.js',
-      endpoint: `/${moduleKey}_cache`
-    }
-
     if (typeof options.swCache === 'boolean') {
-      if (options.swCache) {
-        return defaults
-      }
-
-      return false
+      return options.swCache && swCacheDefaults
     }
 
-    return merge(defaults, options.swCache)
+    return merge(swCacheDefaults, options.swCache)
   })()
 
   return {
