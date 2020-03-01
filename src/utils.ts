@@ -29,13 +29,12 @@ export const getModuleOptions = (
     )
 
     if (nuxtModule) {
-      const optKey = optionsKey || moduleKey.split(/[-/]/).pop()
+      const optKey = optionsKey || (moduleKey.split(/[-/]/).pop() as 'string')
 
-      const moduleOptions = Object.assign(
-        {},
-        (Array.isArray(nuxtModule) && nuxtModule[1]) || {},
-        optKey ? options[optKey] : {}
-      )
+      const moduleOptions = {
+        ...options[optKey],
+        ...((Array.isArray(nuxtModule) && nuxtModule[1]) || {})
+      }
 
       if (Object.keys(moduleOptions).length) {
         return moduleOptions

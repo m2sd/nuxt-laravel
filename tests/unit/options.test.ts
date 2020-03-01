@@ -254,11 +254,30 @@ describe('getConfiguration() method', () => {
         })
 
         test('defaults are merged with custom configuration', () => {
-          const config = executeWithConfig({ swCache: { name: 'test' } })
-
-          expect(config.cache).toMatchObject({
+          expect(
+            executeWithConfig({ swCache: { name: 'test' } }).cache
+          ).toMatchObject({
             ...swCacheDefaults,
             name: 'test'
+          })
+
+          expect(
+            executeWithConfig({ swCache: { name: 'test', endpoint: '/test' } })
+              .cache
+          ).toMatchObject({
+            ...swCacheDefaults,
+            name: 'test',
+            endpoint: '/test'
+          })
+
+          expect(
+            executeWithConfig({
+              swCache: { name: 'test', fileName: 'test.cache.js' }
+            }).cache
+          ).toMatchObject({
+            ...swCacheDefaults,
+            name: 'test',
+            fileName: 'test.cache.js'
           })
         })
 
