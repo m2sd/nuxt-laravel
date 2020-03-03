@@ -193,7 +193,7 @@ describe('getConfiguration() method', () => {
 
         test('.env setting overwrites configuration', () => {
           const config = executeWithConfig({
-            root: 'tests',
+            root: 'tests/fixture',
             outputPath: '/outputTest'
           })
 

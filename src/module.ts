@@ -18,7 +18,7 @@ const laravelModule: Module<Options> = function(overwrites) {
 
   // Fail with a warning if we are not in 'spa' mode
   if (this.options.mode !== 'spa') {
-    logger.warn(`nuxt-laravel only supports 'spa' mode`)
+    logger.warn(`nuxt-laravel currently only supports 'spa' mode`)
 
     addBadgeMessage(this.options, false)
 
@@ -39,6 +39,8 @@ const laravelModule: Module<Options> = function(overwrites) {
   // Fail with error if publicDir cannot be found
   if (!fs.existsSync(config.laravel.public)) {
     logger.error(`Unable to find Laravel public dir: ${config.laravel.public}`)
+
+    addBadgeMessage(this.options, false)
 
     return
   }
@@ -153,12 +155,11 @@ const laravelModule: Module<Options> = function(overwrites) {
 
       // add a copy of the index route
       // on the specified render path
-      routes.push(
-        Object.assign({}, index, {
-          name: moduleKey,
-          path: config.nuxt.routerPath
-        })
-      )
+      routes.push({
+        ...index,
+        name: moduleKey,
+        path: config.nuxt.routerPath
+      })
     })
 
     // start Laravel test server on render:before
@@ -218,10 +219,11 @@ const laravelModule: Module<Options> = function(overwrites) {
             {
               cwd: config.laravel.root,
               // forward render path and baseUrl as env variables
-              env: Object.assign({}, process.env, {
+              env: {
+                ...process.env,
                 [laravelAppEnv]: nuxtUrl.origin,
                 [nuxtOutputEnv]: nuxtUrl.href
-              }),
+              },
               stderr: process.stderr,
               stdout: process.stdout
             }
