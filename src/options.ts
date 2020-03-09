@@ -5,7 +5,7 @@ import { merge } from 'lodash'
 import { Configuration } from '@nuxt/types'
 
 import defaults, { swCacheDefaults } from './defaults'
-import { moduleKey } from './constants'
+import { moduleKey, nuxtOutputEnv } from './constants'
 
 export interface Options {
   root?: string
@@ -91,7 +91,7 @@ export const getConfiguration = (
 
   dotenv.config({ path: `${laravel.root}/.env` })
   const output = (() => {
-    const outputPath = process.env.NUXT_OUTPUT_PATH || options.outputPath
+    const outputPath = options.outputPath || process.env[nuxtOutputEnv]
 
     return {
       src: path.join(laravel.root, moduleKey),

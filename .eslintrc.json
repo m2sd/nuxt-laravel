@@ -20,5 +20,8 @@
     "plugins": [
         "@typescript-eslint"
     ],
-    "rules": {}
+    "rules": {
+        "no-console": "warn",
+        "no-debugger": "warn"
+    }
 }

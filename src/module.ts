@@ -14,7 +14,9 @@ import { getConfiguration, Options } from './options'
 const laravelModule: Module<Options> = function(overwrites) {
   const config = getConfiguration(this.options, overwrites)
 
-  /** VALIDATION **/
+  /** GLOBAL CONTEXT **/
+
+  /* Validation */
 
   // Fail with a warning if we are not in 'spa' mode
   if (this.options.mode !== 'spa') {
@@ -45,7 +47,7 @@ const laravelModule: Module<Options> = function(overwrites) {
     return
   }
 
-  /** IMPLEMENTATION **/
+  /* Implementation */
 
   // Optional cache module
   if (config.cache) {
@@ -75,8 +77,10 @@ const laravelModule: Module<Options> = function(overwrites) {
     this.requireModule('@nuxtjs/pwa')
   }
 
-  // DEV behavior
+  /** DEV behavior **/
   if (this.options.dev) {
+    /* Validation */
+
     // Fail with warning if server is not configured
     if (!config.laravel.server) {
       logger.warn('Laravel test server is disabled')
@@ -85,6 +89,17 @@ const laravelModule: Module<Options> = function(overwrites) {
 
       return
     }
+
+    // Fail with error if nuxt dev server is not configured
+    if (!this.options.server) {
+      logger.warn('Nuxt dev server is disabled')
+
+      addBadgeMessage(this.options, false)
+
+      return
+    }
+
+    /* Implementation */
 
     // resolve pertinent config parameters
     const laravelUrl = new URL(
@@ -167,19 +182,13 @@ const laravelModule: Module<Options> = function(overwrites) {
     this.nuxt.hook(
       'render:before',
       async ({ options }: { options: Configuration }) => {
+        /* istanbul ignore next */
         if (_serverInitialized) {
           return
         }
         _serverInitialized = true
 
-        // Fail with warning if dev server is not enabled
-        if (!options.server) {
-          logger.warn('Nuxt dev server is not enabled')
-
-          addBadgeMessage(options, false)
-
-          return
-        }
+        const nuxtServer = options.server!
 
         if (
           fs.existsSync(config.laravel.public) &&
@@ -194,9 +203,9 @@ const laravelModule: Module<Options> = function(overwrites) {
         // retrieve dev server URL
         const nuxtUrl = new URL(
           config.nuxt.urlPath,
-          `http${!!options.server.https ? 's' : ''}://${
-            options.server.host
-          }:${options.server.port || 80}`
+          `http${!!nuxtServer.https ? 's' : ''}://${nuxtServer.host}:${
+            nuxtServer.port
+          }`
         )
 
         // try to start artisan server from Laravel path
@@ -229,8 +238,13 @@ const laravelModule: Module<Options> = function(overwrites) {
             }
           )
 
+          /* istanbul ignore next */
           server.on('error', () => {
-            logger.error(`Failed to start Laravel server`)
+            logger.error(`Laravel server failed`)
+
+            if (server && !server.killed) {
+              server.kill('SIGKILL')
+            }
           })
         } catch (error) {
           logger.error(`Failed to start Laravel server`)
@@ -243,71 +257,73 @@ const laravelModule: Module<Options> = function(overwrites) {
         addBadgeMessage(options)
       }
     )
+
+    return
   }
 
   // PROD behavior
-  if (!this.options.dev) {
-    // configure generation
-    this.options.generate = {
-      ...(this.options.generate || {}),
-      dir: config.output.src,
-      exclude: [/.*/],
-      fallback: config.output.fallback
+  // configure generation
+  this.options.generate = {
+    ...this.options.generate,
+    dir: config.output.src,
+    exclude: [/.*/],
+    fallback: config.output.fallback
+  }
+
+  this.nuxt.hook('generate:done', async ({ nuxt }: { nuxt: any }) => {
+    // generate assets
+    logger.info('Generating SPA assets...')
+
+    if (config.output.dest.replace(config.laravel.public, '').length > 1) {
+      fs.ensureDirSync(config.output.dest)
+      fs.moveSync(config.output.src, config.output.dest, { overwrite: true })
+    } else {
+      fs.copySync(config.output.src, config.output.dest)
+      fs.removeSync(config.output.src)
     }
 
-    this.nuxt.hook('generate:done', async ({ nuxt }: { nuxt: any }) => {
-      // generate assets
-      logger.info('Generating SPA assets...')
+    logger.success(`SPA assets generated in: ${config.output.dest}`)
 
-      if (config.output.dest.replace(config.laravel.public, '').length > 1) {
-        fs.ensureDirSync(config.output.dest)
-        fs.moveSync(config.output.src, config.output.dest, { overwrite: true })
+    const defaultOutput = path.join(config.output.dest, config.output.fallback)
+
+    if (config.output.additional) {
+      if (defaultOutput === config.output.additional) {
+        logger.info(
+          'Skipping index file output, because output path corresponds to default location'
+        )
       } else {
-        fs.copySync(config.output.src, config.output.dest)
-        fs.removeSync(config.output.src)
-      }
+        const indexPath = config.output.additional
 
-      logger.success(`SPA assets generated in: ${config.output.dest}`)
+        // render index route
+        logger.info('Rendering additional output file...')
 
-      let indexPath = config.output.additional
-      if (indexPath) {
-        if (
-          path.join(config.output.dest, config.output.fallback) === indexPath
-        ) {
-          logger.info(
-            'Skipping index file output, because output path corresponds to default location'
-          )
+        try {
+          const { html, error } = await nuxt.server.renderRoute('/')
 
-          indexPath = path.join(config.output.dest, config.output.fallback)
-        } else {
-          // render index route
-          logger.info('Rendering additional output file...')
-
-          try {
-            const { html, error } = await nuxt.server.renderRoute('/')
-
-            if (error) {
-              throw error
-            }
-
-            fs.ensureDirSync(path.dirname(indexPath))
-            fs.writeFileSync(indexPath, html, 'utf-8')
-          } catch (error) {
-            logger.error('Failed to render index route:', error)
-
-            return
+          /* istanbul ignore if */
+          if (error) {
+            throw error
           }
 
+          fs.ensureDirSync(path.dirname(indexPath))
+          fs.writeFileSync(indexPath, html, 'utf-8')
+
           logger.success(`SPA index file rendered to: ${indexPath}`)
+        } catch (error) {
+          logger.error('Failed to render index route:', error)
+
+          return
         }
       }
+    }
 
-      // write to .env file
-      if (
-        config.options.dotEnvExport &&
-        fs.existsSync(path.join(config.laravel.root, '.env'))
-      ) {
-        const envPath = path.join(config.laravel.root, '.env')
+    // write to .env file
+    if (config.options.dotEnvExport) {
+      const envPath = path.join(config.laravel.root, '.env')
+
+      if (fs.existsSync(envPath)) {
+        const indexPath = config.output.additional || defaultOutput
+
         const envInput = fs.readFileSync(envPath).toString()
         const envOutputPrefix = `${EOL}# Added by 'nuxt-laravel' module${EOL}${nuxtOutputEnv}`
         const envOutput = `${envOutputPrefix}=${indexPath}`
@@ -321,10 +337,10 @@ const laravelModule: Module<Options> = function(overwrites) {
             : envInput.concat(envOutput)
         )
       }
-    })
+    }
+  })
 
-    logger.info('Generation configured for Laravel SPA.')
-  }
+  logger.info('Generation configured for Laravel SPA.')
 }
 
 export default laravelModule

@@ -191,10 +191,9 @@ describe('getConfiguration() method', () => {
           expect(config.output.additional).toBe(expected)
         })
 
-        test('.env setting overwrites configuration', () => {
+        test('output defaults to .env setting', () => {
           const config = executeWithConfig({
-            root: 'tests/fixture',
-            outputPath: '/outputTest'
+            root: 'tests/fixture/dotEnvOverride'
           })
 
           expect(config.output.additional).toBe('/outputTestOverwritten')

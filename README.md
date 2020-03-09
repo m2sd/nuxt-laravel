@@ -7,7 +7,7 @@
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
-| ![Statements](https://img.shields.io/badge/Coverage-47.83%25-red.svg) | ![Branches](https://img.shields.io/badge/Coverage-44.78%25-red.svg) | ![Functions](https://img.shields.io/badge/Coverage-60%25-red.svg) | ![Lines](https://img.shields.io/badge/Coverage-47.83%25-red.svg) |
+| ![Statements](https://img.shields.io/badge/Coverage-90.57%25-brightgreen.svg) | ![Branches](https://img.shields.io/badge/Coverage-80.31%25-yellow.svg) | ![Functions](https://img.shields.io/badge/Coverage-92.86%25-brightgreen.svg) | ![Lines](https://img.shields.io/badge/Coverage-90.57%25-brightgreen.svg) |
 
 > **Disclaimer:** I failed to tag previous versions of this module as a prerelease, please do not consider the api as stable.  
 > Once the stable release is cut this disclaimer will be removed and the module will be versioned correctly.
