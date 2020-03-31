@@ -1,7 +1,7 @@
 # Nuxt Laravel
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](https://commitizen.github.io/cz-cli/)
-[![npm](https://img.shields.io/npm/v/nuxt-laravel/next.svg)](https://www.npmjs.com/package/nuxt-laravel/v/next)
+[![npm](https://img.shields.io/npm/v/nuxt-laravel)](https://www.npmjs.com/package/nuxt-laravel)
 
 **Jest coverage:**
 
@@ -9,15 +9,14 @@
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
 | ![Statements](https://img.shields.io/badge/Coverage-90.57%25-brightgreen.svg) | ![Branches](https://img.shields.io/badge/Coverage-80.31%25-yellow.svg) | ![Functions](https://img.shields.io/badge/Coverage-92.86%25-brightgreen.svg) | ![Lines](https://img.shields.io/badge/Coverage-90.57%25-brightgreen.svg) |
 
-> **Disclaimer:** I failed to tag previous versions of this module as a prerelease, please do not consider the api as stable.  
-> Once the stable release is cut this disclaimer will be removed and the module will be versioned correctly.
-
 Looking for the old CLI extension? [nuxt-laravel](https://github.com/m2sd/nuxt-laravel/tree/legacy).
 
 This module makes it easy to integrate a [NuxtJS](https://nuxtjs.org) SPA into a [Laravel](https://laravel.com) application.  
 The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/laravel-nuxt-js) by [skyrpex](https://github.com/skyrpex).
 
-> **Hint:** Use his composer extension [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt) if you want to forward multiple specific routes to nuxt.
+There is a companion extension also based on [skyrpex](https://github.com/skyrpex)'s work, which makes it very easy to set up nuxt inside an existing laravel project: [m2s/laravel-nuxt](https://github.com/m2sd/laravel-nuxt)
+
+> *Hint*: Use the companion extension for routing integration with laravel.
 
 ## Features
 
@@ -35,13 +34,13 @@ The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/lara
 Install this package and its peer dependencies.
 
 ```bash
-npm install --save-dev @nuxtjs/axios @nuxtjs/proxy nuxt-laravel@next
+npm install --save-dev @nuxtjs/axios @nuxtjs/proxy nuxt-laravel
 ```
 
 or
 
 ```bash
-yarn add --dev @nuxtjs/axios @nuxtjs/proxy nuxt-laravel@next
+yarn add --dev @nuxtjs/axios @nuxtjs/proxy nuxt-laravel
 ```
 
 #### Typescript
@@ -148,18 +147,36 @@ Laravel integration is accomplished through two environment variables.
 
 * **`APP_URL`:**  
   Laravel uses this to generate asset URLs.  
-  * When the Laravel test server is started through this module this variable is overwritten with the nuxt test server URL origin via putenv.
+  * When the Laravel test server is started through this module this variable is overwritten with the nuxt test server URL origin via `putenv`.
 
 * **`NUXT_OUTPUT_PATH`:**  
   Use this variable to redirect all web traffic to, which you want handled by nuxt.  
-  * When the Laravel test server is started through this module this variable is overwritten with a special index route on the nuxt test server via putenv.  
+  * When the Laravel test server is started through this module this variable is overwritten with a special index route on the nuxt test server via `putenv`.  
   * When nuxt is build through this module (and `dotEnvExport` is truthy) this variable will be written to the `.env` file in laravels root directory, containing the resolved `outputPath` (see above).
 
 > **❗❗❗ Attention ❗❗❗:**  
-> You have to use PHPs native `getenv()` function, instead of Laravels `env()` helper to retrieve these varaibles,  
-> because the Laravel helper ignores putenv vars.
+> Make sure your `putenv` is in the `disabled_functions` in your `php.ini`  
+> and that `putenv` support is enabled for the laravel `env()` helper.
+>
+> Alternatively (still: if `putenv` is enabled in PHP) you can just use the `getenv()` function directly.
 
 ### Example scaffolding in existent Laravel application
+
+#### The easy way
+
+1. Install [m2s/laravel-nuxt](https://github.com/m2sd/laravel-nuxt):
+
+   ```sh
+   composer require m2s/laravel-nuxt
+   ```
+
+2. Execute the install command (`<source>` can be omitted and defaults to `resources/nuxt`)
+
+   ```sh
+   php artisan nuxt:install <source>
+   ```
+
+#### The hard (all configuration in project root) way
 
 1. Create a new nuxt app in `resources/nuxt`
 
@@ -248,9 +265,8 @@ Route::get(
  ->name('nuxt');
 ```
 
-#### Forward multiple specific routes to nuxt (using [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt))
+#### Forward multiple specific routes to nuxt (using [laravel-nuxt](https://github.com/m2sd/laravel-nuxt))
 
-Make sure nuxt path resolution of nuxt router corresponds to the defined routes.  
 This example assumes option `nuxtConfig.router.base` to have been set to `'/app/'`
 
 > **❗❗❗ Attention ❗❗❗:**  
@@ -284,29 +300,23 @@ This example assumes option `nuxtConfig.router.base` to have been set to `'/app/
 
 ```php
 return [
-    /**
-     * In production, the SPA page will be located in the filesystem.
-     * The location can be set by env variable NUXT_OUTPUT_PATH or falls back to a static file location
-     *
-     * In development, the SPA page will be fetched from the nuxt development server.
-     * The nuxt server URL will be passed by overwriting the env variable NUXT_OUTPUT_PATH.
-     */
-    'page' => getenv('NUXT_OUTPUT_PATH') ?: public_path('app/index.html')
+    'routing' => false,
+    'prefix'  => 'app'
+    'source'  => env('NUXT_OUTPUT_PATH', public_path('app/index.html'))
 ];
 ```
 
 `routes/web.php`:
 
 ```php
+
+use M2S\LaravelNuxt\Facades\Nuxt;
 /**
  * Forward specific route to nuxt router
  *
  * This route is redered by `<nuxtRoot>/pages/index.vue`
  */
-Route::get(
-    'app',
-    '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
-)->name('nuxt');
+Nuxt::route('/')->name('nuxt');
 
 /**
  * Forward all paths under a specific URI to nuxt router
@@ -322,10 +332,7 @@ Route::get(
  *   or
  *   `<nuxtRoot>/pages/subpage/<path>/index.vue`
  */
-Route::get(
-    'app/subpage{path?}',
-    '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
-)->where('path', '.*')
+Nuxt::route('subpage/{path?}')->where('path', '.*')
  // Redirect to a spcific subpage/<path> from within Laravel
  // by using Laravels route helper
  // e.g.: `route('nuxt.subpage', ['path' => '/<path>'])`
