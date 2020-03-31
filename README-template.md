@@ -158,7 +158,8 @@ Laravel integration is accomplished through two environment variables.
 > Make sure your `putenv` is in the `disabled_functions` in your `php.ini`  
 > and that `putenv` support is enabled for the laravel `env()` helper.
 >
-> Alternatively (still: if `putenv` is enabled in PHP) you can just use the `getenv()` function directly.
+> Alternatively (still: if `putenv` is enabled in PHP) you can just use the `getenv()` function directly.  
+> If you want to use `putenv` directly you should update your `config/app.php` to get `APP_URL` that way.
 
 ### Example scaffolding in existent Laravel application
 
@@ -218,26 +219,6 @@ Laravel integration is accomplished through two environment variables.
 
 ### Example Laravel configuration
 
-`config/app.php`:
-
-```php
-    // ...
-    /*
-    |--------------------------------------------------------------------------
-    | Application URL
-    |--------------------------------------------------------------------------
-    |
-    | This URL is used by the console to properly generate URLs when using
-    | the Artisan command line tool. You should set this to the root of
-    | your application so that it is used when running Artisan tasks.
-    |
-    */
-
-    'url' => getenv('APP_URL') ?: 'http://localhost:8000',
-
-    // ...
-```
-
 #### Forwarding all undefined routes to nuxt
 
 `routes/web.php`:
@@ -246,7 +227,7 @@ Laravel integration is accomplished through two environment variables.
 // ...
 // Add this route last as a catch all for undefined routes.
 Route::get(
-    '{path?}',
+    '/{path?}',
     function($request) {
       // ...
       // If the request expects JSON, it means that
@@ -256,7 +237,7 @@ Route::get(
       }
 
       // Fetch and display the page from the render path on nuxt dev server or fallback to static file
-      return file_get_contents(getenv('NUXT_OUTPUT_PATH') ?: public_path('spa.html'));
+      return file_get_contents(env('NUXT_OUTPUT_PATH', public_path('spa.html'));
     }
 )->where('path', '.*')
  // Redirect to Nuxt from within Laravel
