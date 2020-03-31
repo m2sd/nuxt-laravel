@@ -60,7 +60,7 @@
     "cz-conventional-changelog": "^2.1.0",
     "husky": "^2.1.0",
     "jest": "^24.7.1",
-    "nuxt": "^2.6.3",
+    "nuxt": "^2.12.1",
     "rimraf": "^2.6.3",
     "standard-version": "^5.0.2",
     "ts-jest": "^24.0.2",
@@ -73,7 +73,7 @@
     "dotenv": "^7.0.0",
     "execa": "^1.0.0",
     "fs-extra": "^7.0.1",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.15"
   },
   "peerDependencies": {
     "@nuxtjs/axios": "^5.4.1",

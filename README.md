@@ -1,19 +1,16 @@
 # Nuxt Laravel
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](https://commitizen.github.io/cz-cli/)
-[![npm](https://img.shields.io/npm/v/nuxt-laravel/latest.svg)](https://www.npmjs.com/package/nuxt-laravel)
+[![npm](https://img.shields.io/npm/v/nuxt-laravel/legacy.svg)](https://www.npmjs.com/package/nuxt-laravel/v/legacy)
 
-**Jest coverage:**
+## DEPRECATED: Please use the module implementation
 
-| Statements                  | Branches                | Functions                 | Lines             |
-| --------------------------- | ----------------------- | ------------------------- | ----------------- |
-| ![Statements](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) | ![Branches](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) | ![Functions](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) | ![Lines](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg) |
-
-Looking for the new module implementation? [nuxt-laravel@next](https://github.com/m2sd/nuxt-laravel)
+Looking for the new module implementation? [nuxt-laravel](https://github.com/m2sd/nuxt-laravel)
 
 This package allows to develop a nuxt SPA as frontend for a laravel backend.  
 As the SPA will be compiled to HTML and JS you don't need a node server in production.  
 The implementation is based on [laravel-nuxt-js](https://github.com/skyrpex/laravel-nuxt-js) by [skyrpex](https://github.com/skyrpex).
+
 > **Hint:** Use his composer exension [laravel-nuxt](https://github.com/skyrpex/laravel-nuxt) for an easy way to configure the render path.
 
 ## Installation
@@ -104,7 +101,7 @@ Use it in your `routes/web.php` to redirect all web traffic to or just use [lara
 // ...
 // Add this route last, so it doesn't interfere with your other routes.
 Route::get(
-    '{uri}',
+    '{uri?}',
     function($request, $uri) {
       // ...
       // If the request expects JSON, it means that
@@ -127,7 +124,7 @@ Route::get(
 // ...
 // Add this route last, so it doesn't interfere with your other routes.
 Route::get(
-    '{uri}',
+    '{uri?}',
     '\\'.Pallares\LaravelNuxt\Controllers\NuxtController::class
 )->where('uri', '.*');
 ```
