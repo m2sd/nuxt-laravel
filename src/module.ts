@@ -191,11 +191,12 @@ const laravelModule: Module<Options> = function(overwrites) {
         const nuxtServer = options.server!
 
         if (
-          fs.existsSync(config.laravel.public) &&
+          fs.existsSync(config.output.dest) &&
           config.output.dest.replace(config.laravel.public, '').length > 1
         ) {
           logger.warn(
-            'Removing production build to avoid conflicts with dev server'
+            `Removing production build from: ${config.output.dest}
+            to avoid conflicts with dev server`
           )
           fs.removeSync(config.output.dest)
         }
