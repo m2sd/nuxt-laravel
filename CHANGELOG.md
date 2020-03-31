@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.18...v4.2.0) (2020-03-31)
+
+
+### Bug Fixes
+
+* **dev:** suppress warning message for non existent build folder ([2fe83b5](https://github.com/m2sd/nuxt-laravel/commit/2fe83b506af8e32e2aa77142a9d4d1c64084f420))
+
 ## [4.2.0-beta.18](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.17...v4.2.0-beta.18) (2020-03-09)
 
 ## [4.2.0-beta.17](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0-beta.16...v4.2.0-beta.17) (2020-03-03)
