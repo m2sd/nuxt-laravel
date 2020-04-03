@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.3](https://github.com/m2sd/nuxt-laravel/compare/v4.2.2...v4.2.3) (2020-04-03)
+
+
+### Bug Fixes
+
+* **server:** resolve nuxt host localhost aliases ([ca54130](https://github.com/m2sd/nuxt-laravel/commit/ca541300e2e8124733c6800e83deae961eb5d1cc))
+
 ### [4.2.2](https://github.com/m2sd/nuxt-laravel/compare/v4.2.1...v4.2.2) (2020-03-31)
 
 ### [4.2.1](https://github.com/m2sd/nuxt-laravel/compare/v4.2.0...v4.2.1) (2020-03-31)
