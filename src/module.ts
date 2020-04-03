@@ -201,10 +201,14 @@ const laravelModule: Module<Options> = function(overwrites) {
           fs.removeSync(config.output.dest)
         }
 
+        const nuxtHost = ['0.0.0.0', '127.0.0.1'].includes(`${nuxtServer.host}`)
+          ? 'localhost'
+          : nuxtServer.host
+
         // retrieve dev server URL
         const nuxtUrl = new URL(
           config.nuxt.urlPath,
-          `http${!!nuxtServer.https ? 's' : ''}://${nuxtServer.host}:${
+          `http${!!nuxtServer.https ? 's' : ''}://${nuxtHost}:${
             nuxtServer.port
           }`
         )
