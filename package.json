@@ -1,6 +1,6 @@
 {
   "name": "nuxt-laravel",
-  "version": "4.2.3",
+  "version": "4.2.4",
   "description": "Nuxt cli extension for use with laravel as backend",
   "main": "./lib/module.js",
   "types": "./types/module.d.ts",
@@ -20,8 +20,8 @@
     "lint:fix": "npm run lint -- --fix",
     "lint:check": "eslint --print-config .eslintrc.json | eslint-config-prettier-check",
     "test": "jest",
-    "validate": "yarn lint:check && yarn lint && yarn test && jest-badges-readme",
-    "release": "standard-version"
+    "validate": "yarn lint:check && yarn lint",
+    "release": "yarn test && jest-badges-readme && yarn build && git add lib types 'README.md' && standard-version -a"
   },
   "repository": {
     "type": "git",
@@ -102,7 +102,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn validate && yarn build && git add lib types 'README.md'",
+      "pre-commit": "yarn validate",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   }
