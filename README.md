@@ -7,7 +7,7 @@
 
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
-| ![Statements](https://img.shields.io/badge/Coverage-90.85%25-brightgreen.svg) | ![Branches](https://img.shields.io/badge/Coverage-79.84%25-red.svg) | ![Functions](https://img.shields.io/badge/Coverage-92.86%25-brightgreen.svg) | ![Lines](https://img.shields.io/badge/Coverage-90.68%25-brightgreen.svg) |
+| ![Statements](https://img.shields.io/badge/Coverage-90.8%25-brightgreen.svg) | ![Branches](https://img.shields.io/badge/Coverage-79.84%25-red.svg) | ![Functions](https://img.shields.io/badge/Coverage-92.86%25-brightgreen.svg) | ![Lines](https://img.shields.io/badge/Coverage-90.68%25-brightgreen.svg) |
 
 Looking for the old CLI extension? [nuxt-laravel](https://github.com/m2sd/nuxt-laravel/tree/legacy).
 

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.5](https://github.com/m2sd/nuxt-laravel/compare/v4.2.4...v4.2.5) (2020-04-16)
+
+
+### Bug Fixes
+
+* **types:** adjust type definitions ([e6a8a54](https://github.com/m2sd/nuxt-laravel/commit/e6a8a54dc2c2d5ded46cd2fefdecb2b1a9d4db04))
+
 ### [4.2.5](https://github.com/m2sd/nuxt-laravel/compare/v4.2.3...v4.2.5) (2020-04-16)
 
 
