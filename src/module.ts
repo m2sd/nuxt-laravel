@@ -348,14 +348,12 @@ const laravelModule: Module<Options> = function(overwrites) {
   logger.info('Generation configured for Laravel SPA.')
 }
 
-export default laravelModule
-export { Options } from './options'
-export { moduleKey, laravelAppEnv, nuxtOutputEnv } from './constants'
-
 declare module '@nuxt/types' {
   interface Configuration {
     laravel?: Options
   }
 }
 
+export { Options, moduleKey, laravelAppEnv, nuxtOutputEnv }
+export default laravelModule
 export const meta = require('../package.json')

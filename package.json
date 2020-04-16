@@ -4,11 +4,6 @@
   "description": "Nuxt cli extension for use with laravel as backend",
   "main": "./lib/module.js",
   "types": "./types/module.d.ts",
-  "files": [
-    "bin",
-    "lib",
-    "types"
-  ],
   "engines": {
     "node": ">=8.10.0"
   },
