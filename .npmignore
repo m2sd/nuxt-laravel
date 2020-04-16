@@ -98,3 +98,9 @@ storage
 # Additional ignores
 /src
 /tests
+/.prettierrc
+/jest.config.js
+/.eslintrc.json
+/tsconfig.json
+/tsconfig.build.json
+/README-template.md
