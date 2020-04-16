@@ -349,4 +349,13 @@ const laravelModule: Module<Options> = function(overwrites) {
 }
 
 export default laravelModule
+export { Options } from './options'
+export { moduleKey, laravelAppEnv, nuxtOutputEnv } from './constants'
+
+declare module '@nuxt/types' {
+  interface Configuration {
+    laravel?: Options
+  }
+}
+
 export const meta = require('../package.json')

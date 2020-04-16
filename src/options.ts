@@ -126,9 +126,3 @@ export const getConfiguration = (
     routerBase
   }
 }
-
-declare module '@nuxt/types' {
-  export interface Configuration {
-    laravel?: Options
-  }
-}

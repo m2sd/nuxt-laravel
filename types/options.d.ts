@@ -42,8 +42,3 @@ export declare const getConfiguration: (nuxtOptions: Configuration, overwrites?:
     };
     routerBase: string;
 };
-declare module '@nuxt/types' {
-    interface Configuration {
-        laravel?: Options;
-    }
-}
