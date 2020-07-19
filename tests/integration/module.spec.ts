@@ -2,7 +2,7 @@ import chalk from 'chalk'
 import execa from 'execa'
 import fs from 'fs-extra'
 import { resolve } from 'path'
-import { setup, loadConfig, build, generate } from '@nuxtjs/module-test-utils'
+import { setup, loadConfig, generate } from '@nuxtjs/module-test-utils'
 
 import { Configuration } from '@nuxt/types'
 
@@ -13,15 +13,11 @@ jest.mock('execa')
 
 const execaMock = (execa as unknown) as jest.Mock
 const execaOnMock = jest.fn()
-const laravelMock = jest.fn().mockReturnValue({
-  on: execaOnMock
-})
-execaMock.mockImplementation((program: string, params: string[]) => {
-  if (program === 'php' && params[0] && params[0] === 'artisan')
-    return laravelMock()
-
-  return { on: jest.fn() }
-})
+const execaCancelMock = jest.fn()
+execaMock.mockImplementation(() => ({
+  on: execaOnMock,
+  cancel: execaCancelMock,
+}))
 
 const infoSpy = jest.spyOn(logger, 'info').mockImplementation(() => {})
 const warnSpy = jest.spyOn(logger, 'warn').mockImplementation(() => {})
@@ -34,8 +30,9 @@ describe('module tests', () => {
   const disabledMessage = `Laravel support is ${chalk.red.bold('disabled')}`
   const enabledMessage = `Laravel support is ${chalk.green.bold('enabled')}`
 
-  describe('global validation', () => {
+  describe('validation', () => {
     let nuxt: any
+    const validRoot = resolve(__dirname, '../fixture/default')
 
     const setNuxt = async (options?: Configuration) => {
       nuxt = (
@@ -56,29 +53,26 @@ describe('module tests', () => {
       jest.clearAllMocks()
     })
 
-    test('disabled with warning message for mode `universal`', async () => {
-      await setNuxt({ mode: 'universal' })
-
-      expect(warnSpy).toHaveBeenCalledWith(
-        `nuxt-laravel currently only supports 'spa' mode`
-      )
-    }, 60000)
-
-    test('disabled with error message for missing `artisan` executable', async () => {
+    test('disabled with error message for missing `server.php` file', async () => {
       await setNuxt()
 
       expect(errorSpy).toHaveBeenCalledWith(
-        `Unable to find 'artisan' executable in Laravel path: ${process.cwd()}`
+        `Unable to find 'server.php' file in Laravel path: ${process.cwd()}`
       )
     }, 60000)
 
     test('disabled with error message for missing `public` dir', async () => {
-      const root = resolve(__dirname, '../fixture/default')
-      await setNuxt({ laravel: { root, publicDir: 'missing' } })
+      await setNuxt({ laravel: { root: validRoot, publicDir: 'missing' } })
 
       expect(errorSpy).toHaveBeenCalledWith(
-        `Unable to find Laravel public dir: ${root}/missing`
+        `Unable to find Laravel public dir: ${validRoot}/missing`
       )
+    }, 60000)
+
+    test('disabled with warning message if laravel proxy is disabled', async () => {
+      await setNuxt({ laravel: { root: validRoot, server: false } })
+
+      expect(warnSpy).toHaveBeenCalledWith('Laravel proxy is disabled')
     }, 60000)
   })
 
@@ -86,36 +80,36 @@ describe('module tests', () => {
     test.todo('swCache implementation')
   })
 
-  describe('dev functionality', () => {
+  describe('proxy', () => {
     let nuxt: any
     const laravelRoot = resolve(__dirname, '../fixture/default')
 
-    process.env.NODE_ENV = 'development'
-
     const setNuxt = async (options?: Configuration) => {
+      const config = {
+        dev: true,
+        ...options,
+        laravel: {
+          root: laravelRoot,
+          ...(options && options.laravel),
+        },
+      }
+
+      process.env.NODE_ENV = config.dev ? 'development' : 'production'
+
       nuxt = (
-        await setup(
-          loadConfig(resolve(__dirname, '..'), 'default', {
-            dev: true,
-            ...options,
-            laravel: {
-              root: laravelRoot,
-              ...(options && options.laravel)
-            }
-          })
-        )
+        await setup(loadConfig(resolve(__dirname, '..'), 'default', config))
       ).nuxt
     }
 
     const testProxy = (proxy: any, host = 'http://localhost:3001') => {
       expect(proxy).toBeDefined()
       expect(proxy).toContainEqual([
-        ['**/*', `!/${moduleKey}`],
+        expect.any(Function),
         {
           target: host,
           ws: false,
-          logLevel: 'debug'
-        }
+          logLevel: 'debug',
+        },
       ])
     }
 
@@ -132,68 +126,24 @@ describe('module tests', () => {
         port: 3001,
         origin: 'http://localhost:3000',
         path: moduleKey,
-        ...overrides
+        ...overrides,
       }
       expect(execaMock).toHaveBeenCalledTimes(1)
       expect(execaMock).toHaveBeenCalledWith(
         'php',
-        ['artisan', 'serve', `--host=${config.host}`, `--port=${config.port}`],
+        ['-S', `${config.host}:${config.port}`, `${laravelRoot}/server.php`],
         expect.objectContaining({
           cwd: laravelRoot,
           env: expect.objectContaining({
             [laravelAppEnv]: config.origin,
-            [nuxtOutputEnv]: `${config.origin}/${moduleKey}`
-          })
+            [nuxtOutputEnv]: `${config.origin}/${moduleKey}`,
+          }),
         })
       )
       expect(execaOnMock).toHaveBeenCalledTimes(1)
     }
 
-    describe('validation', () => {
-      test('disabled with warning message for disabled laravel server', async () => {
-        await setNuxt({ laravel: { server: false } })
-
-        expect(warnSpy).toHaveBeenCalledWith('Laravel test server is disabled')
-
-        expect(nuxt.options.cli).toBeDefined()
-        expect(nuxt.options.cli.badgeMessages).toContain(disabledMessage)
-
-        await nuxt.close()
-        nuxt = null
-
-        jest.clearAllMocks()
-      }, 60000)
-
-      test('disabled with error message for disabled nuxt dev server', async () => {
-        nuxt = (
-          await build(
-            loadConfig(resolve(__dirname, '..'), 'default', {
-              dev: true,
-              server: false as any,
-              laravel: {
-                root: laravelRoot,
-                server: {
-                  host: 'host.test',
-                  port: 8080
-                }
-              }
-            })
-          )
-        ).nuxt
-
-        expect(warnSpy).toHaveBeenCalledWith('Nuxt dev server is disabled')
-
-        expect(nuxt.options.cli).toBeDefined()
-        expect(nuxt.options.cli.badgeMessages).toContain(disabledMessage)
-
-        await nuxt.close()
-        nuxt = null
-
-        jest.clearAllMocks()
-      }, 60000)
-    })
-
-    describe('implementation', () => {
+    describe('dev behavior', () => {
       beforeAll(async () => {
         await setNuxt()
       }, 60000)
@@ -201,6 +151,8 @@ describe('module tests', () => {
       afterAll(async () => {
         await nuxt.close()
         nuxt = null
+
+        expect(execaCancelMock).toHaveBeenCalledTimes(1)
 
         jest.clearAllMocks()
       })
@@ -212,16 +164,6 @@ describe('module tests', () => {
 
       test('proxy is configured correctly', () => {
         testProxy(nuxt.options.proxy)
-      })
-
-      test('routes are extended with render url', () => {
-        expect(nuxt.options.router.routes).toContainEqual(
-          expect.objectContaining({
-            name: moduleKey,
-            path: `/${moduleKey}`,
-            component: expect.stringMatching(/index\.vue$/)
-          })
-        )
       })
 
       test('testserver is started with correct configuration', () => {
@@ -253,7 +195,7 @@ describe('module tests', () => {
         const testHost = 'host.test'
         const testPort = 3000
         await setNuxt({
-          laravel: { server: { host: testHost, port: testPort } }
+          laravel: { server: { host: testHost, port: testPort } },
         })
 
         testProxy(nuxt.options.proxy, `http://${testHost}:${testPort}`)
@@ -274,35 +216,19 @@ describe('module tests', () => {
         testProxy(nuxt.options.proxy, `http://localhost:${nuxtPort + 1}`)
         testServer({
           port: nuxtPort + 1,
-          origin: `http://localhost:${nuxtPort}`
+          origin: `http://localhost:${nuxtPort}`,
         })
       }, 60000)
 
-      test.todo('Routing tests')
-    })
+      test('testserver not started if not in dev mode', async () => {
+        await setNuxt({ dev: false })
 
-    describe('error handling', () => {
-      test('disabled with error message if execa throws', async () => {
-        laravelMock.mockReturnValueOnce(() => {
-          throw String('Error')
-        })
-
-        await setNuxt()
-
-        expect(errorSpy).toHaveBeenCalledWith(`Failed to start Laravel server`)
-
-        expect(nuxt.options.cli).toBeDefined()
-        expect(nuxt.options.cli.badgeMessages).toContain(disabledMessage)
-
-        await nuxt.close()
-        nuxt = null
-
-        jest.clearAllMocks()
+        expect(execaMock).toHaveBeenCalledTimes(0)
       }, 60000)
     })
   })
 
-  describe('prod functionality', () => {
+  describe('generation', () => {
     let nuxt: any
     let laravelRoot: string
     let nuxtTeardown: (() => Promise<void>) | null = null
@@ -314,6 +240,7 @@ describe('module tests', () => {
       fixture: string = 'default'
     ) => {
       laravelRoot = resolve(__dirname, `../fixture/${fixture}`)
+      process.static = true
 
       nuxt = (
         await generate(
@@ -322,8 +249,8 @@ describe('module tests', () => {
             ...options,
             laravel: {
               root: laravelRoot,
-              ...(options && options.laravel)
-            }
+              ...(options && options.laravel),
+            },
           })
         )
       ).nuxt
@@ -339,7 +266,7 @@ describe('module tests', () => {
         } else {
           fs.removeSync(`${laravelRoot}/public/_nuxt`)
           fs.removeSync(`${laravelRoot}/public/.nojekyll`)
-          fs.removeSync(`${laravelRoot}/public/spa.html`)
+          fs.removeSync(`${laravelRoot}/public/200.html`)
         }
 
         if (fs.existsSync(`${laravelRoot}/storage`)) {
@@ -367,26 +294,32 @@ describe('module tests', () => {
         if (nuxtTeardown) await nuxtTeardown()
       })
 
+      test('proxy is set up', () => {
+        expect(infoSpy).toHaveBeenNthCalledWith(
+          1,
+          'Proxying all routes to Laravel on: http://localhost:3001'
+        )
+      })
+
       test('generation is configured correctly', () => {
         expect(nuxt.options.generate).toBeDefined()
         expect(nuxt.options.generate).toEqual(
           expect.objectContaining({
             dir: `${laravelRoot}/${moduleKey}`,
             exclude: [/.*/],
-            fallback: 'spa.html'
           })
         )
         expect(infoSpy).toHaveBeenNthCalledWith(
-          1,
+          2,
           'Generation configured for Laravel SPA.'
         )
       })
 
       test('generation is executed', () => {
-        expect(infoSpy).toHaveBeenNthCalledWith(2, 'Generating SPA assets...')
+        expect(infoSpy).toHaveBeenNthCalledWith(3, 'Copying nuxt assets...')
         expect(successSpy).toBeCalledTimes(1)
         expect(successSpy).toBeCalledWith(
-          `SPA assets generated in: ${laravelRoot}/public/`
+          `Nuxt assets copied to: ${laravelRoot}/public/`
         )
       })
 
@@ -396,8 +329,8 @@ describe('module tests', () => {
         const outRoot = `${laravelRoot}/public/`
 
         expect(fs.existsSync(`${outRoot}_nuxt`)).toBe(true)
-        expect(fs.existsSync(`${outRoot}spa.html`)).toBe(true)
-        containsHtml(`${outRoot}spa.html`)
+        expect(fs.existsSync(`${outRoot}200.html`)).toBe(true)
+        containsHtml(`${outRoot}200.html`)
       })
     })
 
@@ -409,32 +342,28 @@ describe('module tests', () => {
           outRoot = `${laravelRoot}/public/`
         }
 
-        const outName =
-          outRoot === `${laravelRoot}/public/` ? 'spa.html' : 'index.html'
-
         expect(nuxt.options.generate).toEqual(
           expect.objectContaining({
             dir: `${laravelRoot}/${moduleKey}`,
             exclude: [/.*/],
-            fallback: outName
           })
         )
         expect(infoSpy).toHaveBeenNthCalledWith(
-          1,
+          2,
           'Generation configured for Laravel SPA.'
         )
-        expect(infoSpy).toHaveBeenNthCalledWith(2, 'Generating SPA assets...')
+        expect(infoSpy).toHaveBeenNthCalledWith(3, 'Copying nuxt assets...')
 
         expect(successSpy).toHaveBeenNthCalledWith(
           1,
-          `SPA assets generated in: ${outRoot}`
+          `Nuxt assets copied to: ${outRoot}`
         )
 
         expect(fs.existsSync(`${laravelRoot}/${moduleKey}`)).toBe(false)
 
         expect(fs.existsSync(`${outRoot}_nuxt`)).toBe(true)
-        expect(fs.existsSync(`${outRoot}${outName}`)).toBe(true)
-        containsHtml(`${outRoot}${outName}`)
+        expect(fs.existsSync(`${outRoot}200.html`)).toBe(true)
+        containsHtml(`${outRoot}200.html`)
 
         if (nuxtTeardown) await nuxtTeardown()
         outRoot = ''
@@ -444,32 +373,26 @@ describe('module tests', () => {
         await nuxtSetup({ router: { base: '/test/' } })
 
         outRoot = `${laravelRoot}/public/test/`
-
-        expect(nuxt.options.generate).toEqual(
-          expect.objectContaining({
-            fallback: 'index.html'
-          })
-        )
       }, 60000)
 
       test('additional output file', async () => {
         await nuxtSetup({
           laravel: {
-            outputPath: 'storage/spa.html'
-          }
+            outputPath: 'storage/spa.html',
+          },
         })
 
-        expect(infoSpy).toHaveBeenNthCalledWith(
-          3,
-          'Rendering additional output file...'
+        expect(infoSpy).toHaveBeenNthCalledWith(4, 'Rendering index file...')
+        expect(successSpy).toHaveBeenNthCalledWith(
+          2,
+          `SPA index file rendered to: ${laravelRoot}/storage/spa.html`
         )
-
         expect(fs.existsSync(`${laravelRoot}/storage/spa.html`)).toBe(true)
         containsHtml(`${laravelRoot}/storage/spa.html`)
       }, 60000)
 
       describe('.env export', () => {
-        afterAll(() => {
+        afterEach(() => {
           fs.writeFileSync(
             resolve(__dirname, '../fixture/dotEnvExport/.env'),
             ''
@@ -484,7 +407,7 @@ describe('module tests', () => {
           await nuxtSetup({ laravel: { dotEnvExport: true } }, 'dotEnvExport')
 
           const expectedRegEx = new RegExp(
-            `${nuxtOutputEnv}=${laravelRoot}/public/spa.html`,
+            `${nuxtOutputEnv}=${laravelRoot}/public/200.html`,
             'g'
           )
 
@@ -501,7 +424,7 @@ describe('module tests', () => {
           delete process.env[nuxtOutputEnv]
         }, 60000)
 
-        test('overwrites previous output', async () => {
+        test('writes custom output path', async () => {
           await nuxtSetup(
             { laravel: { dotEnvExport: true, outputPath: 'storage/spa.html' } },
             'dotEnvExport'
@@ -525,44 +448,23 @@ describe('module tests', () => {
           delete process.env[nuxtOutputEnv]
         }, 60000)
 
-        test(`overwrites manually defined '${nuxtOutputEnv}'`, async () => {
-          await nuxtSetup(
-            { laravel: { dotEnvExport: true, outputPath: 'public/spa.html' } },
-            'dotEnvOverride'
-          )
-
-          const expectedRegEx = new RegExp(
-            `${nuxtOutputEnv}=${laravelRoot}/public/spa.html`,
-            'g'
-          )
-
-          const dotEnvContent = fs
-            .readFileSync(`${laravelRoot}/.env`)
-            .toString()
-
-          expect(dotEnvContent).toMatch(expectedRegEx)
-
-          const matches = dotEnvContent.match(expectedRegEx)
-          expect(matches).toBeTruthy()
-          expect(matches!.length).toBe(1)
-
-          delete process.env[nuxtOutputEnv]
-        }, 60000)
-
-        test('fails silently with missing .env file', async () => {
+        test('fails with warning for missing .env file', async () => {
           await nuxtSetup({ laravel: { dotEnvExport: true } })
 
+          expect(warnSpy).toHaveBeenCalledWith(
+            `Unable to find .env file in: ${laravelRoot}/.env\n.env export skipped`
+          )
           expect(fs.existsSync(`${laravelRoot}/.env`)).toBe(false)
-        })
+        }, 60000)
       })
     })
 
-    describe('error handling', () => {
+    describe.skip('error handling', () => {
       test('additional output is skipped if it corresponds to default output', async () => {
         await nuxtSetup({
           laravel: {
-            outputPath: 'public/spa.html'
-          }
+            outputPath: 'public/spa.html',
+          },
         })
 
         expect(infoSpy).toHaveBeenNthCalledWith(
@@ -584,8 +486,8 @@ describe('module tests', () => {
 
         await nuxtSetup({
           laravel: {
-            outputPath: 'storage/spa.html'
-          }
+            outputPath: 'storage/spa.html',
+          },
         })
 
         expect(infoSpy).toHaveBeenNthCalledWith(

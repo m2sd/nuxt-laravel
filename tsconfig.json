@@ -11,7 +11,7 @@
     "types": [
       "@types/node",
       "@nuxt/types",
-      "@types/jest"
+      "@types/jest",
     ],
     "esModuleInterop": true
   },

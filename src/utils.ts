@@ -33,7 +33,7 @@ export const getModuleOptions = (
 
       const moduleOptions = {
         ...options[optKey],
-        ...((Array.isArray(nuxtModule) && nuxtModule[1]) || {})
+        ...((Array.isArray(nuxtModule) && nuxtModule[1]) || {}),
       }
 
       if (Object.keys(moduleOptions).length) {
