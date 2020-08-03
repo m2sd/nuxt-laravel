@@ -86,7 +86,7 @@ const laravelModule: Module<Options> = function(overwrites) {
     proxy: true,
   }
 
-  // configure proxy to forward all requests without a xsrf-token cookie to Laravel
+  // configure proxy to forward all requests without a x-laravel-nuxt-proxy header to Laravel
   this.options.proxy = [
     ...(this.options.proxy || []),
     [

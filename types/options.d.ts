@@ -3,6 +3,7 @@ export interface Options {
     root?: string;
     publicDir?: string;
     outputPath?: string;
+    devServer?: boolean;
     server?: boolean | {
         host?: string;
         port: number;
@@ -14,31 +15,37 @@ export interface Options {
     };
     dotEnvExport?: boolean;
 }
-export declare const validateOptions: (options: Options) => options is Required<Pick<Options, "server" | "root" | "publicDir" | "swCache" | "dotEnvExport">> & Pick<Options, "outputPath">;
-export declare const getConfiguration: (nuxtOptions: Configuration, overwrites?: Options | undefined) => {
-    options: Required<Pick<Options, "server" | "root" | "publicDir" | "swCache" | "dotEnvExport">> & Pick<Options, "outputPath">;
-    nuxt: {
-        urlPath: string;
-        routerPath: string;
-    };
-    laravel: {
-        root: string;
-        public: string;
-        server: false | {
-            host?: string | undefined;
-            port: number;
-        };
-    };
-    output: {
-        src: string;
-        dest: string;
-        fallback: string;
-        additional: string | false;
-    };
-    cache: false | {
-        name: string;
-        fileName: string;
-        endpoint: string;
-    };
-    routerBase: string;
+declare type ValidOptions = Required<Omit<Options, 'outputPath'>> & Pick<Options, 'outputPath'>;
+declare type CacheConfig = false | {
+    name: string;
+    fileName: string;
+    endpoint: string;
 };
+interface NuxtConfig {
+    routerBase: string;
+    urlPath: string;
+    routerPath: string;
+}
+interface LaravelConfig {
+    root: string;
+    public: string;
+    server: false | {
+        host?: string;
+        port: number;
+    };
+}
+interface OutputConfig {
+    src: string;
+    dest: string;
+    indexPath: false | string;
+    fallback: string;
+}
+export interface ModuleConfig {
+    options: ValidOptions;
+    nuxt: NuxtConfig;
+    laravel: LaravelConfig;
+    cache: CacheConfig;
+    output: OutputConfig;
+}
+export declare const getConfiguration: (nuxtOptions: Configuration, overwrites?: Options) => ModuleConfig;
+export {};
