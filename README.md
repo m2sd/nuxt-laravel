@@ -18,6 +18,11 @@ There is a companion extension also based on [skyrpex](https://github.com/skyrpe
 
 > *Hint*: Use the companion extension for routing integration with laravel.
 
+## Summary
+
+* [Features](#features)
+* [Setup](#setup)
+
 ## Features
 
 * Easily deploy an existing Nuxt app inside a Laravel application or vice versa
@@ -140,6 +145,17 @@ If this setting is set to `true` the caching endpoint will be added with the def
 
 If `nuxtConfig.router.base` is not set the SPA will be generated in the `publicDir` root with an index file name of `spa.html`.  
 If `nuxtConfig.router.base` is set the SPA will be generated in a corresponding location inside `publicDir` with the default index file name `index.html`.
+
+##### Root routing
+
+This argument permits the router base to be at root: `/`. If remain to default, the nuxt assets files will be rendered in the public and the package might delete all your public files in order to clean the directory for dev purposes.
+
+`nuxt.config.js`
+```js
+  laravel: {
+    publicDir: 'public/client-assets'
+  },
+```
 
 ## Laravel integration
 
