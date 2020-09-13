@@ -116,9 +116,9 @@ const laravelModule: Module<Options> = function (overwrites) {
       ...(this.options.proxy || []),
       [
         [
-          '**/*',
+          '**',
           `!${config.nuxt.urlPath}`,
-          `!${path.posix.join(config.routerBase, '_loading')}`,
+          `!${path.posix.join(config.routerBase, '_loading')}/**`,
         ],
         {
           target: laravelUrl.origin,
