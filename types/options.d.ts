@@ -1,4 +1,4 @@
-import { Configuration } from '@nuxt/types';
+import { NuxtConfig } from '@nuxt/types';
 export interface Options {
     root?: string;
     publicDir?: string;
@@ -15,7 +15,7 @@ export interface Options {
     dotEnvExport?: boolean;
 }
 export declare const validateOptions: (options: Options) => options is Required<Pick<Options, "server" | "root" | "publicDir" | "swCache" | "dotEnvExport">> & Pick<Options, "outputPath">;
-export declare const getConfiguration: (nuxtOptions: Configuration, overwrites?: Options | undefined) => {
+export declare const getConfiguration: (nuxtOptions: NuxtConfig, overwrites?: Options | undefined) => {
     options: Required<Pick<Options, "server" | "root" | "publicDir" | "swCache" | "dotEnvExport">> & Pick<Options, "outputPath">;
     nuxt: {
         urlPath: string;
