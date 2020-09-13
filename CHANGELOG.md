@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.8](https://github.com/m2sd/nuxt-laravel/compare/v4.2.7...v4.2.8) (2020-09-13)
+
+
+### Bug Fixes
+
+* **proxy:** ignore _loading path when proxying to laravel ([2877eb1](https://github.com/m2sd/nuxt-laravel/commit/2877eb1a3fd5bb305171121e3f60f48262ce4ca6))
+
 ### [4.2.7](https://github.com/m2sd/nuxt-laravel/compare/v4.2.6...v4.2.7) (2020-04-16)
 
 ### [4.2.6](https://github.com/m2sd/nuxt-laravel/compare/v4.2.5...v4.2.6) (2020-04-16)
