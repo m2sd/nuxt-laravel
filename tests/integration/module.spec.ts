@@ -14,7 +14,7 @@ jest.mock('execa')
 const execaMock = (execa as unknown) as jest.Mock
 const execaOnMock = jest.fn()
 const laravelMock = jest.fn().mockReturnValue({
-  on: execaOnMock
+  on: execaOnMock,
 })
 execaMock.mockImplementation((program: string, params: string[]) => {
   if (program === 'php' && params[0] && params[0] === 'artisan')
@@ -100,8 +100,8 @@ describe('module tests', () => {
             ...options,
             laravel: {
               root: laravelRoot,
-              ...(options && options.laravel)
-            }
+              ...(options && options.laravel),
+            },
           })
         )
       ).nuxt
@@ -110,12 +110,12 @@ describe('module tests', () => {
     const testProxy = (proxy: any, host = 'http://localhost:3001') => {
       expect(proxy).toBeDefined()
       expect(proxy).toContainEqual([
-        ['**/*', `!/${moduleKey}`, '!/_loading'],
+        ['**', `!/${moduleKey}`, '!/_loading/**'],
         {
           target: host,
           ws: false,
-          logLevel: 'debug'
-        }
+          logLevel: 'debug',
+        },
       ])
     }
 
@@ -132,7 +132,7 @@ describe('module tests', () => {
         port: 3001,
         origin: 'http://localhost:3000',
         path: moduleKey,
-        ...overrides
+        ...overrides,
       }
       expect(execaMock).toHaveBeenCalledTimes(1)
       expect(execaMock).toHaveBeenCalledWith(
@@ -142,8 +142,8 @@ describe('module tests', () => {
           cwd: laravelRoot,
           env: expect.objectContaining({
             [laravelAppEnv]: config.origin,
-            [nuxtOutputEnv]: `${config.origin}/${moduleKey}`
-          })
+            [nuxtOutputEnv]: `${config.origin}/${moduleKey}`,
+          }),
         })
       )
       expect(execaOnMock).toHaveBeenCalledTimes(1)
@@ -174,9 +174,9 @@ describe('module tests', () => {
                 root: laravelRoot,
                 server: {
                   host: 'host.test',
-                  port: 8080
-                }
-              }
+                  port: 8080,
+                },
+              },
             })
           )
         ).nuxt
@@ -219,7 +219,7 @@ describe('module tests', () => {
           expect.objectContaining({
             name: moduleKey,
             path: `/${moduleKey}`,
-            component: expect.stringMatching(/index\.vue$/)
+            component: expect.stringMatching(/index\.vue$/),
           })
         )
       })
@@ -253,7 +253,7 @@ describe('module tests', () => {
         const testHost = 'host.test'
         const testPort = 3000
         await setNuxt({
-          laravel: { server: { host: testHost, port: testPort } }
+          laravel: { server: { host: testHost, port: testPort } },
         })
 
         testProxy(nuxt.options.proxy, `http://${testHost}:${testPort}`)
@@ -274,7 +274,7 @@ describe('module tests', () => {
         testProxy(nuxt.options.proxy, `http://localhost:${nuxtPort + 1}`)
         testServer({
           port: nuxtPort + 1,
-          origin: `http://localhost:${nuxtPort}`
+          origin: `http://localhost:${nuxtPort}`,
         })
       }, 60000)
 
@@ -322,8 +322,8 @@ describe('module tests', () => {
             ...options,
             laravel: {
               root: laravelRoot,
-              ...(options && options.laravel)
-            }
+              ...(options && options.laravel),
+            },
           })
         )
       ).nuxt
@@ -373,7 +373,7 @@ describe('module tests', () => {
           expect.objectContaining({
             dir: `${laravelRoot}/${moduleKey}`,
             exclude: [/.*/],
-            fallback: 'spa.html'
+            fallback: 'spa.html',
           })
         )
         expect(infoSpy).toHaveBeenNthCalledWith(
@@ -416,7 +416,7 @@ describe('module tests', () => {
           expect.objectContaining({
             dir: `${laravelRoot}/${moduleKey}`,
             exclude: [/.*/],
-            fallback: outName
+            fallback: outName,
           })
         )
         expect(infoSpy).toHaveBeenNthCalledWith(
@@ -447,7 +447,7 @@ describe('module tests', () => {
 
         expect(nuxt.options.generate).toEqual(
           expect.objectContaining({
-            fallback: 'index.html'
+            fallback: 'index.html',
           })
         )
       }, 60000)
@@ -455,8 +455,8 @@ describe('module tests', () => {
       test('additional output file', async () => {
         await nuxtSetup({
           laravel: {
-            outputPath: 'storage/spa.html'
-          }
+            outputPath: 'storage/spa.html',
+          },
         })
 
         expect(infoSpy).toHaveBeenNthCalledWith(
@@ -561,8 +561,8 @@ describe('module tests', () => {
       test('additional output is skipped if it corresponds to default output', async () => {
         await nuxtSetup({
           laravel: {
-            outputPath: 'public/spa.html'
-          }
+            outputPath: 'public/spa.html',
+          },
         })
 
         expect(infoSpy).toHaveBeenNthCalledWith(
@@ -584,8 +584,8 @@ describe('module tests', () => {
 
         await nuxtSetup({
           laravel: {
-            outputPath: 'storage/spa.html'
-          }
+            outputPath: 'storage/spa.html',
+          },
         })
 
         expect(infoSpy).toHaveBeenNthCalledWith(
