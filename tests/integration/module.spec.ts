@@ -110,7 +110,7 @@ describe('module tests', () => {
     const testProxy = (proxy: any, host = 'http://localhost:3001') => {
       expect(proxy).toBeDefined()
       expect(proxy).toContainEqual([
-        ['**/*', `!/${moduleKey}`],
+        ['**/*', `!/${moduleKey}`, '!/_loading'],
         {
           target: host,
           ws: false,

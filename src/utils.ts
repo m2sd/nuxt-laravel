@@ -1,14 +1,14 @@
 import chalk from 'chalk'
 import consola from 'consola'
 
-import { Configuration } from '@nuxt/types'
+import { NuxtConfig } from '@nuxt/types'
 
 import { scope } from './constants'
 
 export const logger = consola.withScope(scope)
 
 export const addBadgeMessage = (
-  options: Configuration,
+  options: NuxtConfig,
   enabled: boolean = true
 ) => {
   const status = enabled
@@ -19,13 +19,13 @@ export const addBadgeMessage = (
 }
 
 export const getModuleOptions = (
-  options: Configuration,
+  options: NuxtConfig,
   moduleKey: string,
   optionsKey?: string
 ) => {
   if (options.modules) {
     const nuxtModule = options.modules.find(
-      m => (Array.isArray(m) && m[0] === moduleKey) || m === moduleKey
+      (m) => (Array.isArray(m) && m[0] === moduleKey) || m === moduleKey
     )
 
     if (nuxtModule) {
@@ -33,7 +33,7 @@ export const getModuleOptions = (
 
       const moduleOptions = {
         ...options[optKey],
-        ...((Array.isArray(nuxtModule) && nuxtModule[1]) || {})
+        ...((Array.isArray(nuxtModule) && nuxtModule[1]) || {}),
       }
 
       if (Object.keys(moduleOptions).length) {

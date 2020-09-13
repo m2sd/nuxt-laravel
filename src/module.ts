@@ -11,7 +11,7 @@ import { moduleKey, laravelAppEnv, nuxtOutputEnv } from './constants'
 import { logger, addBadgeMessage, getModuleOptions } from './utils'
 import { getConfiguration, Options } from './options'
 
-const laravelModule: Module<Options> = function(overwrites) {
+const laravelModule: Module<Options> = function (overwrites) {
   const config = getConfiguration(this.options, overwrites)
 
   /** GLOBAL CONTEXT **/
@@ -58,7 +58,7 @@ const laravelModule: Module<Options> = function(overwrites) {
     const { dst } = this.addTemplate({
       src: path.join(__dirname, 'templates', 'workbox.cache.ejs'),
       options: config.cache,
-      fileName: config.cache.fileName
+      fileName: config.cache.fileName,
     })
 
     this.options.pwa = {
@@ -69,9 +69,9 @@ const laravelModule: Module<Options> = function(overwrites) {
           ...(typeof routingExtensions === 'string'
             ? [routingExtensions]
             : routingExtensions),
-          path.join(this.options.buildDir!, dst)
-        ]
-      }
+          path.join(this.options.buildDir!, dst),
+        ],
+      },
     }
 
     this.requireModule('@nuxtjs/pwa')
@@ -110,18 +110,22 @@ const laravelModule: Module<Options> = function(overwrites) {
 
     this.options.axios = {
       ...(this.options.axios || {}),
-      proxy: true
+      proxy: true,
     }
     this.options.proxy = [
       ...(this.options.proxy || []),
       [
-        ['**/*', `!${config.nuxt.urlPath}`],
+        [
+          '**/*',
+          `!${config.nuxt.urlPath}`,
+          `!${path.posix.join(config.routerBase, '_loading')}`,
+        ],
         {
           target: laravelUrl.origin,
           ws: false,
-          logLevel: 'debug'
-        }
-      ]
+          logLevel: 'debug',
+        },
+      ],
     ]
 
     // configure proxy
@@ -133,7 +137,7 @@ const laravelModule: Module<Options> = function(overwrites) {
         // First, check if there is an unnamed route
         // Then, check if there's a route at /
         // Finally, check for a name with first segment index
-        route =>
+        (route) =>
           route.name === '' ||
           route.path === '/' ||
           !!(route.name && route.name.match(/^index(-\w+)?$/))
@@ -148,7 +152,7 @@ const laravelModule: Module<Options> = function(overwrites) {
         if (i18nOptions && i18nOptions.defaultLocale) {
           const separator = i18nOptions.routesNameSeparator || '___'
           index = routes.find(
-            route =>
+            (route) =>
               !!(
                 route.name &&
                 route.name.match(
@@ -173,7 +177,7 @@ const laravelModule: Module<Options> = function(overwrites) {
       routes.push({
         ...index,
         name: moduleKey,
-        path: config.nuxt.routerPath
+        path: config.nuxt.routerPath,
       })
     })
 
@@ -228,7 +232,7 @@ const laravelModule: Module<Options> = function(overwrites) {
                   ? '127.0.0.1'
                   : laravelUrl.hostname
               }`,
-              `--port=${laravelUrl.port}`
+              `--port=${laravelUrl.port}`,
             ],
             {
               cwd: config.laravel.root,
@@ -236,10 +240,10 @@ const laravelModule: Module<Options> = function(overwrites) {
               env: {
                 ...process.env,
                 [laravelAppEnv]: nuxtUrl.origin,
-                [nuxtOutputEnv]: nuxtUrl.href
+                [nuxtOutputEnv]: nuxtUrl.href,
               },
               stderr: process.stderr,
-              stdout: process.stdout
+              stdout: process.stdout,
             }
           )
 
@@ -272,7 +276,7 @@ const laravelModule: Module<Options> = function(overwrites) {
     ...this.options.generate,
     dir: config.output.src,
     exclude: [/.*/],
-    fallback: config.output.fallback
+    fallback: config.output.fallback,
   }
 
   this.nuxt.hook('generate:done', async ({ nuxt }: { nuxt: any }) => {

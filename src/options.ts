@@ -2,7 +2,7 @@ import path from 'path'
 import dotenv from 'dotenv'
 import { merge } from 'lodash'
 
-import { Configuration } from '@nuxt/types'
+import { NuxtConfig } from '@nuxt/types'
 
 import defaults, { swCacheDefaults } from './defaults'
 import { moduleKey, nuxtOutputEnv } from './constants'
@@ -45,7 +45,7 @@ export const validateOptions = (
 }
 
 export const getConfiguration = (
-  nuxtOptions: Configuration,
+  nuxtOptions: NuxtConfig,
   overwrites?: Options
 ) => {
   const routerBase = (nuxtOptions.router && nuxtOptions.router.base) || '/'
@@ -58,7 +58,7 @@ export const getConfiguration = (
 
   const nuxt = {
     urlPath: path.posix.join(routerBase, moduleKey),
-    routerPath: `/${moduleKey}`
+    routerPath: `/${moduleKey}`,
   }
 
   const laravel = (() => {
@@ -69,7 +69,7 @@ export const getConfiguration = (
         : options.server && nuxtOptions.server
         ? {
             host: nuxtOptions.server.host,
-            port: +(nuxtOptions.server.port || 3000) + 1
+            port: +(nuxtOptions.server.port || 3000) + 1,
           }
         : (false as false)
 
@@ -85,7 +85,7 @@ export const getConfiguration = (
     return {
       root: laravelRoot,
       public: path.resolve(laravelRoot, options.publicDir),
-      server
+      server,
     }
   })()
 
@@ -99,7 +99,7 @@ export const getConfiguration = (
       fallback: `${routerBase.length > 1 ? 'index' : 'spa'}.html`,
       additional: outputPath
         ? path.resolve(laravel.root, outputPath)
-        : (false as false)
+        : (false as false),
     }
   })()
 
@@ -123,6 +123,6 @@ export const getConfiguration = (
     laravel,
     output,
     cache,
-    routerBase
+    routerBase,
   }
 }
