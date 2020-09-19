@@ -29,7 +29,7 @@ There is a companion extension also based on [skyrpex](https://github.com/skyrpe
 
 ### Installation
 
-> **Hint:** If your stating fresh consider cloning [nuxt-laravel-starter](https://github.com/m2sd/nuxt-laravel-starter)
+> **Hint:** If your stating fresh consider using the [LaraNuxt](https://github.com/m2sd/LaraNuxt) template
 
 Install this package and its peer dependencies.
 
