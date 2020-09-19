@@ -1,0 +1,10 @@
+{
+  "title": "LaraNuxt",
+  "url": "laranuxt.com",
+  "logo": {
+    "light": "/logo-light.svg",
+    "dark": "/logo-dark.svg"
+  },
+  "github": "m2ds/LaraNuxt",
+  "twitter": ""
+}
