@@ -4,9 +4,9 @@ description: ''
 position: 1
 category: ''
 features:
-  - Feature 1
-  - Feature 2
-  - Feature 3
+  - Use both Laravel and Nuxt routers
+  - Access all your features within 1 project
+  - SSR friendly
 ---
 
 <img src="/preview.png" class="light-img" width="1280" height="640" alt=""/>

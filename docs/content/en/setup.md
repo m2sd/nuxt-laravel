@@ -9,34 +9,44 @@ Check the [Nuxt.js documentation](https://nuxtjs.org/guides/configuration-glossa
 
 ## Installation
 
-Add `@nuxtjs/xxx` dependency to your project:
+### Using GitHub
+
+By using GitHub [template](https://github.com/m2sd/LaraNuxt/generate)
+
+You can either use [GitHub Desktop](x-github-client://openRepo/https://github.com/m2sd/LaraNuxt)
+
+### Using Clone
 
 <code-group>
-  <code-block label="Yarn" active>
+  <code-block label="HTTPS" active>
 
   ```bash
-  yarn add @nuxtjs/xxx
+  git clone https://github.com/m2sd/LaraNuxt.git
   ```
 
   </code-block>
-  <code-block label="NPM">
+  <code-block label="SSH">
 
   ```bash
-  npm install @nuxtjs/xxx
+  git clone git@github.com:m2sd/LaraNuxt.git
+  ```
+
+  </code-block>
+  <code-block label="GitHub CLI">
+
+  ```bash
+  gh repo clone m2sd/LaraNuxt
   ```
 
   </code-block>
 </code-group>
 
-Then, add `@nuxtjs/xxx` to the `modules` section of `nuxt.config.js`:
+### Dowloading as zip
 
-```js[nuxt.config.js]
-{
-  modules: [
-    '@nuxtjs/xxx'
-  ],
-  xxx: {
-    // Options
-  }
-}
-```
+<alert type="danger">
+
+This solution is not recommended
+
+</alert>
+
+[Download as zip](https://github.com/m2sd/LaraNuxt/archive/master.zip)
